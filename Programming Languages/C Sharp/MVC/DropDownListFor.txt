@@ -1,0 +1,188 @@
+-- Controller -- You first got to create a SelectList in the controller. You also need to make an object that corresponds to the values and display text. I tried to make objects inside of the select list as I went and when an item is selected it will try and return the whole object instead of just the value.
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Web;
+	using System.Web.Mvc;
+	using StonebridgeJCP.ViewModels;
+	using System.Data;
+
+	namespace StonebridgeJCP.Controllers
+	{
+		public class GetAQuoteController : Controller
+		{
+			// GET: /AD/
+			public ActionResult Index()
+			{
+				//Send the view the dropdown data
+				ViewData["StateList"] = StateList;
+				ViewData["AgeList"] = AgeList;
+				return View();
+			}
+			
+			[HttpPost]
+			public ActionResult Index(AdViewModel AdVM)
+			{
+				try
+				{
+					//Send the view the dropdown data
+					ViewData["StateList"] = StateList;
+					ViewData["AgeList"] = AgeList;
+					if (ModelState.IsValid)
+					{
+						//The form was valid so do something
+					}
+				}
+				catch (DataException ex)
+				{
+					//Log the error
+					ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists contact your system administrator." + ex.Message.ToString() + " / " + ex.InnerException.ToString());
+				}
+				//Go back to the same view because something was wrong.
+				return View("Index", AdVM);
+			}
+
+			#region DropDownListData
+			public SelectList StateList
+			{
+				get
+				{
+					List<DropDownListItem> tempList = new List<DropDownListItem>();
+					tempList.Add(new DropDownListItem { value = "AL", text = "Alabama" });
+					tempList.Add(new DropDownListItem { value = "AK", text = "Alaska" });
+					tempList.Add(new DropDownListItem { value = "AZ", text = "Arizona" });
+					tempList.Add(new DropDownListItem { value = "AR", text = "Arkansas" });
+					tempList.Add(new DropDownListItem { value = "CA", text = "California" });
+					tempList.Add(new DropDownListItem { value = "CO", text = "Colorado" });
+					tempList.Add(new DropDownListItem { value = "CT", text = "Connecticut" });
+					tempList.Add(new DropDownListItem { value = "DE", text = "Delaware" });
+					tempList.Add(new DropDownListItem { value = "DC", text = "District of Columbia" });
+					tempList.Add(new DropDownListItem { value = "FL", text = "Florida" });
+					tempList.Add(new DropDownListItem { value = "GA", text = "Georgia" });
+					tempList.Add(new DropDownListItem { value = "HI", text = "Hawaii" });
+					tempList.Add(new DropDownListItem { value = "ID", text = "Idaho" });
+					tempList.Add(new DropDownListItem { value = "IL", text = "Illinois" });
+					tempList.Add(new DropDownListItem { value = "IN", text = "Indiana" });
+					tempList.Add(new DropDownListItem { value = "IA", text = "Iowa" });
+					tempList.Add(new DropDownListItem { value = "KS", text = "Kansas" });
+					tempList.Add(new DropDownListItem { value = "KY", text = "Kentucky" });
+					tempList.Add(new DropDownListItem { value = "LA", text = "Louisiana" });
+					tempList.Add(new DropDownListItem { value = "ME", text = "Maine" });
+					tempList.Add(new DropDownListItem { value = "MT", text = "Montana" });
+					tempList.Add(new DropDownListItem { value = "NE", text = "Nebraska" });
+					tempList.Add(new DropDownListItem { value = "NV", text = "Nevada" });
+					tempList.Add(new DropDownListItem { value = "NH", text = "New Hampshire" });
+					tempList.Add(new DropDownListItem { value = "NJ", text = "New Jersey" });
+					tempList.Add(new DropDownListItem { value = "NM", text = "New Mexico" });
+					tempList.Add(new DropDownListItem { value = "NY", text = "New York" });
+					tempList.Add(new DropDownListItem { value = "NC", text = "North Carolina" });
+					tempList.Add(new DropDownListItem { value = "ND", text = "North Dakota" });
+					tempList.Add(new DropDownListItem { value = "OH", text = "Ohio" });
+					tempList.Add(new DropDownListItem { value = "OK", text = "Oklahoma" });
+					tempList.Add(new DropDownListItem { value = "OR", text = "Oregon" });
+					tempList.Add(new DropDownListItem { value = "MD", text = "Maryland" });
+					tempList.Add(new DropDownListItem { value = "MA", text = "Massachusetts" });
+					tempList.Add(new DropDownListItem { value = "MI", text = "Michigan" });
+					tempList.Add(new DropDownListItem { value = "MN", text = "Minnesota" });
+					tempList.Add(new DropDownListItem { value = "MS", text = "Mississippi" });
+					tempList.Add(new DropDownListItem { value = "MO", text = "Missouri" });
+					tempList.Add(new DropDownListItem { value = "PA", text = "Pennsylvania" });
+					tempList.Add(new DropDownListItem { value = "RI", text = "Rhode Island" });
+					tempList.Add(new DropDownListItem { value = "SC", text = "South Carolina" });
+					tempList.Add(new DropDownListItem { value = "SD", text = "South Dakota" });
+					tempList.Add(new DropDownListItem { value = "TN", text = "Tennessee" });
+					tempList.Add(new DropDownListItem { value = "TX", text = "Texas" });
+					tempList.Add(new DropDownListItem { value = "UT", text = "Utah" });
+					tempList.Add(new DropDownListItem { value = "VT", text = "Vermont" });
+					tempList.Add(new DropDownListItem { value = "VA", text = "Virginia" });
+					tempList.Add(new DropDownListItem { value = "WA", text = "Washington" });
+					tempList.Add(new DropDownListItem { value = "WV", text = "West Virginia" });
+					tempList.Add(new DropDownListItem { value = "WI", text = "Wisconsin" });
+					tempList.Add(new DropDownListItem { value = "WY", text = "Wyoming" });
+					return new SelectList(tempList, "value", "text", 1);
+				}
+			}
+
+			public SelectList AgeList
+			{
+				get
+				{
+					List<DropDownListItem> tempList = new List<DropDownListItem>();
+					for (int x = 8; x <= 100; x++)
+					{
+						DropDownListItem tempDropDownListItem = new DropDownListItem();
+						tempDropDownListItem.value = x.ToString();
+						tempDropDownListItem.text = x.ToString();
+
+						tempList.Add(tempDropDownListItem);
+					}
+					return new SelectList(tempList, "value", "text");
+				}
+			}
+			#endregion
+		}
+	}
+
+	public class DropDownListItem
+	{
+		public string value { get; set; }
+		public string text { get; set; }
+	}
+
+
+-- View -- Pass in the items for the drop down list using ViewData like this ViewData["StateList"] as SelectList. When a user clicks submit 
+	@model StonebridgeJCP.ViewModels.GetAQuoteViewModel
+
+	<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+	<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+	<script src="@Url.Content("~/Scripts/jquery.validate.requiredifattribute.js")" type="text/javascript"></script>
+
+	@using (Html.BeginForm())
+	{
+		@Html.ValidationSummary(false, message: "Please make sure the following fields are completed:")
+		<h2>Get A Quote Tool</h2>
+		<fieldset>
+
+			@*State*@
+				<div class="editor-label">
+					@Html.LabelFor(model => model.State)
+				</div>
+				<div class="editor-field">
+					@Html.DropDownListFor(model => model.State, ViewData["StateList"] as SelectList, new { id = "selState" })
+					@Html.ValidationMessageFor(model => model.State, "*")
+				</div>
+
+			@*Age*@
+				<div class="editor-label">
+					@Html.LabelFor(model => model.Age)
+				</div>
+				<div class="editor-field">
+					@Html.DropDownListFor(model => model.Age, ViewData["AgeList"] as SelectList, new { id = "selAge" })
+					@Html.ValidationMessageFor(model => model.Age, "*")
+				</div>
+
+				<p>
+					<input type="submit" value="Submit" />
+				</p>
+
+		</fieldset>
+	}
+	
+-- Model -- There is nothing special about the model
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Web;
+	using System.ComponentModel.DataAnnotations;
+
+	namespace StonebridgeJCP.ViewModels
+	{
+		public class GetAQuoteViewModel
+		{
+			[Required(ErrorMessage = "Please enter your state.")]
+			public string State { get; set; }
+
+			[Required(ErrorMessage = "Please enter your age.")]
+			public int Age { get; set; }
+		}
+	}

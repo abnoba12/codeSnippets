@@ -1,0 +1,102 @@
+<!--Place at the top of the xslt file-->
+	<msxsl:script language="JScript" implements-prefix="script">
+		function UsedIn(itemURI /*string*/)
+		{
+			var lObjTDSE = new ActiveXObject("TDS.TDSE");
+			var lObjItem = lObjTDSE.GetObject(itemURI, 1);
+			var lStrListUsingItems = lObjItem.Info.GetListUsingItems();
+			
+			var lObjListUsingItemsDOM = new ActiveXObject("MSXML2.DOMDocument.4.0");
+			lObjListUsingItemsDOM.loadXML(lStrListUsingItems);
+			
+			return lObjListUsingItemsDOM;
+		}
+	</msxsl:script>
+	
+<!--Place in the code-->
+	<div class="expertProfileRecentPosts">
+		<h2>Recent Posts</h2>
+		<div class="expertProfilePostContainer">
+			<xsl:for-each select="script:UsedIn(string(/tcm:Component/@ID))/tcm:ListUsingItems/tcm:Item">
+				<xsl:sort select="@ID" order="descending"/>
+				<xsl:variable name="a" select="document(@ID)/tcm:Component/tcm:Data/tcm:Content/eis:Content"/>
+				<xsl:variable name="eisMeta" select="document(@ID)/tcm:Component/tcm:Data/tcm:Metadata/eis:Metadata"/>
+				<xsl:if test="$a/eis:Article">
+					<div class="expertProfilePost">
+						<xsl:choose>
+							<xsl:when test="$a/eis:Article/eis:Feature_Title">
+								<h3>
+									<a compURI="{@ID}" pubURI="{$tcm:Publication/tcm:Publication/@ID}" showOnFailure="true">
+										<xsl:value-of select="$a/eis:Article/eis:Feature_Title"/>
+									</a>
+								</h3>
+							</xsl:when>
+							<xsl:otherwise>
+								<h3>
+									<a compURI="{@ID}" pubURI="{$tcm:Publication/tcm:Publication/@ID}" showOnFailure="true">
+										<xsl:value-of select="$a/eis:Article/eis:Title"/>
+									</a>
+								</h3>
+							</xsl:otherwise>
+						</xsl:choose>
+						<div class="source">
+							<xsl:for-each select="$a/eis:Article/eis:Source">
+								<xsl:variable name="s" select="document(@xlink:href)/tcm:Component/tcm:Data/tcm:Content/eis:Content"/>
+								<xsl:if test="$s/eis:Title"><xsl:value-of select="$s/eis:Title"/></xsl:if>
+							</xsl:for-each>
+							<xsl:if test="string-length($a/eis:Article/eis:Date)&gt;0 or string-length($eisMeta/eis:General_Meta/eis:EW_Publish_Date)&gt;0">
+								<xsl:for-each select="$a/eis:Article/eis:Source">
+									<xsl:variable name="s" select="document(@xlink:href)/tcm:Component/tcm:Data/tcm:Content/eis:Content"/>
+									<xsl:if test="$s/eis:Title"><xsl:text>. </xsl:text></xsl:if>
+								</xsl:for-each>
+								<xsl:choose>
+									<xsl:when test="string-length($eisMeta/eis:General_Meta/eis:EW_Publish_Date)&gt;0">
+										<xsl:call-template name="citation">
+											<xsl:with-param name="eDate" select="$eisMeta/eis:General_Meta/eis:EW_Publish_Date"/>
+											<xsl:with-param name="volume" select="$eisMeta/eis:General_Meta/eis:Journal_Volume"/>
+											<xsl:with-param name="issue" select="$eisMeta/eis:General_Meta/eis:Issue_Number"/>
+											<xsl:with-param name="start" select="$eisMeta/eis:General_Meta/eis:Start_Page"/>
+											<xsl:with-param name="end" select="$eisMeta/eis:General_Meta/eis:End_Page"/>
+										</xsl:call-template>
+									</xsl:when>
+									<xsl:otherwise>
+										<!--<xsl:call-template name="dateFmtJS">
+									<xsl:with-param name="theDate" select="$a/eis:Article/eis:Date"/>
+								</xsl:call-template>-->
+										<xsl:call-template name="citation">
+											<xsl:with-param name="tDate" select="$a/eis:Article/eis:Date"/>
+											<xsl:with-param name="volume" select="$eisMeta/eis:General_Meta/eis:Journal_Volume"/>
+											<xsl:with-param name="issue" select="$eisMeta/eis:General_Meta/eis:Issue_Number"/>
+											<xsl:with-param name="start" select="$eisMeta/eis:General_Meta/eis:Start_Page"/>
+											<xsl:with-param name="end" select="$eisMeta/eis:General_Meta/eis:End_Page"/>
+										</xsl:call-template>
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:if>
+							<xsl:if test="$a/eis:Article/eis:Author">
+								<xsl:choose>
+									<xsl:when test="$a/eis:Article/eis:Date"><xsl:text>, </xsl:text></xsl:when>
+									<xsl:otherwise>
+										<xsl:for-each select="$a/eis:Article/eis:Source">
+											<xsl:variable name="s" select="document(@xlink:href)/tcm:Component/tcm:Data/tcm:Content/eis:Content"/>
+											<xsl:if test="$s/eis:Title"><xsl:text>, </xsl:text></xsl:if>
+										</xsl:for-each>
+									</xsl:otherwise>
+								</xsl:choose>
+								<xsl:for-each select="$a/eis:Article/eis:Author">
+									<xsl:if test="position() = 1"><xsl:value-of select="."/></xsl:if>
+									<xsl:if test="position() = 2"><xsl:value-of select="$etal"/></xsl:if>
+								</xsl:for-each>
+							</xsl:if>
+							<xsl:if test="$a/eis:Article/eis:VolumeInfo">
+								<xsl:value-of select="$a/eis:Article/eis:VolumeInfo"/>
+							</xsl:if>
+						</div>
+					</div>
+				</xsl:if>
+			</xsl:for-each>
+		</div>
+		<div class="readMoreExpertPostsContainer">
+			<div class="readMoreExpertPosts">Read More</div>
+		</div>
+	</div>

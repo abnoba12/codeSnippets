@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<States>
+	<State code="AL" name="Alabama" />
+	<State code="AK" name="Alaska" />
+	<State code="AZ" name="Arizona" />
+	<State code="AR" name="Arkansas" />
+	<State code="CA" name="California" />
+	<State code="CO" name="Colorado" />
+	<State code="CT" name="Connecticut" />
+	<State code="DE" name="Delaware" />
+	<State code="DC" name="Dist. of Columbia" />
+	<State code="FL" name="Florida" />
+	<State code="GA" name="Georgia" />
+	<State code="HI" name="Hawaii" />
+	<State code="ID" name="Idaho" />
+	<State code="IL" name="Illinois" />
+	<State code="IN" name="Indiana" />
+	<State code="IA" name="Iowa" />
+	<State code="KS" name="Kansas" />
+	<State code="KY" name="Kentucky" />
+	<State code="LA" name="Louisiana" />
+	<State code="ME" name="Maine" />
+	<State code="MD" name="Maryland" />
+	<State code="MA" name="Massachusetts" />
+	<State code="MI" name="Michigan" />
+	<State code="MN" name="Minnesota" />
+	<State code="MS" name="Mississippi" />
+	<State code="MO" name="Missouri" />
+	<State code="MT" name="Montana" />
+	<State code="NE" name="Nebraska" />
+	<State code="NV" name="Nevada" />
+	<State code="NH" name="New Hampshire" />
+	<State code="NJ" name="New Jersey" />
+	<State code="NM" name="New Mexico" />
+	<State code="NY" name="New York" />
+	<State code="NC" name="North Carolina" />
+	<State code="ND" name="North Dakota" />
+	<State code="OH" name="Ohio" />
+	<State code="OK" name="Oklahoma" />
+	<State code="OR" name="Oregon" />
+	<State code="PA" name="Pennsylvania" />
+	<State code="RI" name="Rhode Island" />
+	<State code="SC" name="South Carolina" />
+	<State code="SD" name="South Dakota" />
+	<State code="TN" name="Tennessee" />
+	<State code="TX" name="Texas" />
+	<State code="UT" name="Utah" />
+	<State code="VT" name="Vermont" />
+	<State code="VA" name="Virginia" />
+	<State code="WA" name="Washington" />
+	<State code="WV" name="West Virginia" />
+	<State code="WI" name="Wisconsin" />
+	<State code="WY" name="Wyoming" />
+</States>

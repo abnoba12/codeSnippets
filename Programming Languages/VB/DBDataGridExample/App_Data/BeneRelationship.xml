@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Relationships>
+	<Relationship code="ACCT" desc="Accountant" />
+	<Relationship code="ATNY" desc="Attorney" />
+	<Relationship code="AUNT" desc="Aunt" />
+	<Relationship code="BUSP" desc="Business Partner" />
+	<Relationship code="CHAR" desc="Charity" />
+	<Relationship code="CHD" desc="Child" />
+	<Relationship code="COS" desc="Cousin" />
+	<Relationship code="CRED" desc="Creditor" />
+	<Relationship code="DP" desc="Domestic Partner" />
+	<Relationship code="EMP" desc="Employer" />
+	<Relationship code="EST" desc="Estate" />
+	<Relationship code="EX" desc="Ex-Spouse" />
+	<Relationship code="FNC" desc="Fiancée" />
+	<Relationship code="FOCD" desc="Foster Child" />
+	<Relationship code="FOPR" desc="Foster Parent" />
+	<Relationship code="FRND" desc="Friend" />
+	<Relationship code="GDPR" desc="Godparent" />
+	<Relationship code="GCHD" desc="Grandchild" />
+	<Relationship code="GRP" desc="Grandparent" />
+	<Relationship code="GRA" desc="Great Aunt" />
+	<Relationship code="GRU" desc="Great Uncle" />
+	<Relationship code="GGRC" desc="Great Grandchild" />
+	<Relationship code="GGRP" desc="Great Grandparent" />
+	<Relationship code="HSIB" desc="Half Sibling" />
+	<Relationship code="LWT" desc="Last Will and Testament" />
+	<Relationship code="LGU" desc="Legal Guardian" />
+	<Relationship code="NEPH" desc="Nephew" />
+	<Relationship code="NIEC" desc="Niece" />
+	<Relationship code="PAR" desc="Parent" />
+	<Relationship code="PIL" desc="Parents-in-Law" />
+	<Relationship code="SIB" desc="Sibling" />
+	<Relationship code="SIL" desc="Sibling-in-Law" />
+	<Relationship code="SPS" desc="Spouse" />
+	<Relationship code="STCD" desc="Step-Child" />
+	<Relationship code="STPR" desc="Step-Parent" />
+	<Relationship code="STSB" desc="Step-Sibling" />
+	<Relationship code="TRST" desc="Trust" />
+	<Relationship code="UNC" desc="Uncle" />
+</Relationships>

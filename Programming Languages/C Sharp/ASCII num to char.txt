@@ -1,0 +1,2 @@
+//Lowercase a
+Char.ConvertFromUtf32(97);

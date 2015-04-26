@@ -1,0 +1,44 @@
+-- Javascript --
+	<script>
+        $(document).ready(function () {
+        //Label Masks
+            $('input[type="text"]').each(function () {
+                if ($(this).attr("value") == "") {
+                    this.value = $(this).attr('title');
+                    $(this).addClass('text-label');
+
+                    $(this).focus(function () {
+                        if (this.value == $(this).attr('title')) {
+                            this.value = '';
+                            $(this).removeClass('text-label');
+                        }
+                    });
+
+                    $(this).blur(function () {
+                        if (this.value == '') {
+                            this.value = $(this).attr('title');
+                            $(this).addClass('text-label');
+                        }
+                    });
+                }
+            });
+
+            //when using label masks we need to remove them before form submission
+            $("form").submit(function (event) {
+                $('input[type="text"]').each(function () {
+                    if (this.value == $(this).attr('title')) {
+                        this.value = '';
+                        $(this).removeClass('text-label');
+                    }
+                });
+            });
+		 });		 
+    </script>
+	
+-- HTML Markup --
+	-- HTML --
+		<!-- Notice the title attribute this is the key to how this works.-->
+		<input type="text" value="" title="Address 1" name="Bill_Street_1" id="Bill_Street_1">
+		
+	-- C# Razor style --
+		@Html.TextBoxFor(model => model.Bill_Street_1, new { title = "Address 1"  })

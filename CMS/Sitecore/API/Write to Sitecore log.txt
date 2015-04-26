@@ -1,0 +1,27 @@
+--- Standard way to write to the sitecore log ---
+- You can use Info(), Error(), Warn() for different types of logging
+
+// Write Failure Sitecore log
+Sitecore.Diagnostics.Log.Info("Auto Publish of: " + sitecoreItem.Paths.Path.ToString() + " Failed at: " + DateTime.Now, this);
+
+--- Write to a custom Sitecore log ---
+- In the web.config, you need to define both a logger, and an appender. The logger will choose which appender to use. Under the <log4net> section of the web.config, add these two custom sets of nodes:
+
+<appender name="CustomLogFileAppender" type="log4net.Appender.SitecoreLogFileAppender, Sitecore.Logging">
+    <file value="$(dataFolder)/logs/custom.log.{date}.txt"/>
+    <appendToFile value="true"/>
+    <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern value="%4t %d{ABSOLUTE} %-5p %m%n"/>
+    </layout>
+</appender>
+ 
+<logger name="Sitecore.Diagnostics.Custom" additivity="false">
+    <level value="INFO"/>
+    <appender-ref ref="CustomLogFileAppender"/>
+</logger>
+
+- Now that you have the log configured, it’s time to write some simple C# to write to the log.
+
+var logger = log4net.LogManager.GetLogger("MyNamespace.Project.Custom");
+//logger.Info("Hello, world. And by world, I mean a text file.");
+Sitecore.Diagnostics.Log.Debug("Log this message in my own appender", logger);

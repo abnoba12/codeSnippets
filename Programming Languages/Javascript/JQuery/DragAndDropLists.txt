@@ -1,0 +1,139 @@
+<script src="@Url.Content("~/scripts/jquery-ui.min.js?v1.1")"></script>
+
+<style>
+	#sourceList li{
+        background-color: #fcf8e3;
+        border: 1px solid #fbeed5;
+        color: #c09853;
+    }
+    #selectedList li{
+        background-color: #fcf8e3;
+        border: 1px solid #fbeed5;
+        color: #c09853;
+    }
+    #sourceList li, #selectedList li {
+        border-radius: 4px;
+        margin: 5px;
+        padding: 5px;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    .droptrue{
+        background: none repeat scroll 0 0 #eee;
+        float: left;
+        list-style-type: none;
+        margin: 0 10px 0 0;
+        padding: 5px;
+        width: 100%;
+        min-height: 100px;
+        max-height: 500px;
+        overflow: auto;
+    }
+    .listActions{
+        text-align: center
+    }
+    .listActions .btn {
+        width: 30%;
+        margin: 10px 0;
+    }
+    #sourceList li.selected, #selectedList li.selected{
+        border: 1px solid black;
+        font-weight: bold;
+        opacity: 0.75;
+    }
+</style>
+<script type="text/javascript">
+	$(document).ready(function () {
+        $("#sourceList li").click(function () {
+            $("#sourceList li").removeClass("selected");
+            $(this).addClass("selected");
+        });
+        $("#selectedList li").click(function () {
+            $("#selectedList li").removeClass("selected");
+            $(this).addClass("selected");
+        });
+        $("ul.droptrue").sortable({
+            connectWith: "ul",
+            receive: function (event, ui) { updateEmailList(); }
+        });
+        $("#sourceList li").dblclick(function () {
+            moveToSelected($(this));
+        });
+        $('#return').click(function () {
+            moveToSource($("#selectedList li.selected"));
+        });
+        $("#move").click(function () {
+            moveToSelected($("#sourceList li.selected"));
+        });
+        $("#moveAll").click(function () {
+            moveToSelected($("#sourceList li"));
+        });
+        $("#clearList").click(function () {
+            moveToSource($("#selectedList li"));
+        });
+    //END - Document.ready
+    });
+    function moveToSelected(obj) {
+        obj.unbind();
+        $("#selectedList").append($(obj));
+        obj.dblclick(function () {
+            moveToSource($(this));
+        });
+        obj.removeClass("selected");
+        $("#selectedList li").click(function () {
+            $("#selectedList li").removeClass("selected");
+            $(this).addClass("selected");
+        });
+        updateEmailList();
+    }
+    function moveToSource(obj) {
+        obj.unbind();
+        $("#sourceList").append($(obj));
+        obj.dblclick(function () {
+            moveToSelected($(this));
+        });
+        obj.removeClass("selected");
+        $("#sourceList li").click(function () {
+            $("#sourceList li").removeClass("selected");
+            $(this).addClass("selected");
+        });
+        updateEmailList();
+    }
+    function updateEmailList() {
+        var emailNameList = "";
+        var emailAddressList = "";
+        $("#selectedList li").each(function (index) {
+            emailNameList = emailNameList + $(this).html() + "; ";
+
+            var custId = $(this).attr("data-id");
+            var emailAddress = $(this).attr("data-email");
+            var name = $(this).html();
+            if (name != "" && emailAddress != "" && custId != "") {
+                emailAddressList += "<input type=\"hidden\" name=\"recipientList\" value=\"" + name + ":" + emailAddress + ":" + custId + "\" />";
+            }
+        });
+        $('#emailTemplate .recipientList').html(emailNameList);
+        $("#emailTemplate #emailAddressList").html(emailAddressList);
+    };
+</script>
+<div class="row-fluid">
+	<div class="span4">
+		<ul id="sourceList" class="droptrue">
+			@{List<OMS40.Models.CustomerEmailDto> emailList = ViewBag.emailList;}
+			@foreach (OMS40.Models.CustomerEmailDto email in emailList)
+			{
+				<li class="ui-state-default" data-id="@email.Customer_ID" data-email="@email.Email_Address">@Html.Raw(email.First_Name + " " + email.Last_Name+" ("+email.Email_Address+")")</li>
+			}
+		</ul>
+	</div>
+	<div class="span4">
+		<div class="listActions">
+			<div><a href="javascript:void(0);" id="move" class="btn">></a></div>
+			<div><a href="javascript:void(0);" id="return" class="btn"><</a></div>
+			<div><a href="javascript:void(0);" id="moveAll" class="btn">>></a></div>
+			<div><a href="javascript:void(0);" id="clearList" class="btn"><<</a></div>
+		</div>
+	</div>
+	<div class="span4">
+		<ul id="selectedList" class="droptrue"></ul>
+	</div>
+</div>

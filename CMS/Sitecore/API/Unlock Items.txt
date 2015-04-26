@@ -1,0 +1,185 @@
+--- ASPX File ---
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ItemUnlocker.aspx.cs" Inherits="Website.Root.WebsiteUtil.ItemUnlocker" %>
+<%@ Register TagPrefix="sc" Namespace="Sitecore.Web.UI.HtmlControls" Assembly="Sitecore.Kernel" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head runat="server">
+    <title>Item unlocker</title>
+</head>
+<body>
+    <p>Select a user to display what locks a user holds. Please be patient this may take a while.</p>
+    <form id="form1" runat="server">
+        <div style="margin: auto; width: 250px;">
+            <asp:Label ID="lblUser" runat="server" Text="User: "></asp:Label>&nbsp;
+            <asp:DropDownList ID="ddluserlist" runat="server" OnSelectedIndexChanged="ddluserlist_SelectedIndexChanged" AutoPostBack="true">
+                <asp:ListItem Text="Select User" Value=""></asp:ListItem>
+                <asp:ListItem Text="All Users" Value="all"></asp:ListItem>
+            </asp:DropDownList>
+            <asp:RequiredFieldValidator ID="rfvUserList" runat="server" ErrorMessage="User is required." ControlToValidate="ddluserlist"></asp:RequiredFieldValidator><br />
+                        
+            <asp:Label ID="lblNode" runat="server" Text="Node: "></asp:Label>&nbsp;
+            <asp:TextBox ID="txtNode" runat="server">/sitecore/content</asp:TextBox><br /><br />
+            <asp:Button ID="btnSubmit" runat="server" Text="Unlock Locked Items" OnClick="btnSubmit_Click" />
+        </div>
+    </form>
+    <div>
+        <asp:Literal runat="server" ID="litLockedItems"></asp:Literal>
+    </div>
+</body>
+</html>
+
+--- CS File ---
+using System;
+using Sitecore.Data.Fields;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
+using Sitecore.Data.Items;
+using Sitecore.Security.Domains;
+using Sitecore.Configuration;
+using System.Web.Security;
+using System.Web.UI.WebControls;
+
+namespace Website.Root.WebsiteUtil
+{
+    public partial class ItemUnlocker : System.Web.UI.Page
+    {
+        protected Sitecore.Data.Database database = Sitecore.Configuration.Factory.GetDatabase("master");
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!Sitecore.Context.IsLoggedIn)
+            {
+                Session["SC_LOGIN_REDIRECT"] = Sitecore.Context.RawUrl;
+                Response.Redirect("/sitecore/login");
+            }
+
+            using (new Sitecore.SecurityModel.SecurityDisabler())
+            {
+                //Get a list of all the users
+                MembershipUserCollection memberCollection = Membership.GetAllUsers();
+                //Add each user do the dropdown list
+                foreach (MembershipUser m in memberCollection)
+                {
+                    ddluserlist.Items.Add(new ListItem(m.UserName, m.UserName));
+                }
+            }
+        }
+
+        //When you select a user show the items they currently have locked
+        protected void ddluserlist_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            litLockedItems.Text = "No locked items";
+            if (ddluserlist.SelectedIndex > 0)
+            {
+                Sitecore.Data.Items.Item myRootItem = database.Items.GetItem(txtNode.Text);
+                if (ddluserlist.SelectedValue.Equals("all"))
+                {
+                    RecursiveShowLockedItems(myRootItem, "");
+                }
+                else
+                {
+                    RecursiveShowLockedItems(myRootItem, ddluserlist.SelectedValue);
+                }
+            }
+        }
+
+        //Clear the locks on the items
+        protected void btnSubmit_Click(object sender, EventArgs e)
+        {
+            litLockedItems.Text = "No locked items";
+            if (!txtNode.Text.Equals(string.Empty))
+            {
+                using (new Sitecore.SecurityModel.SecurityDisabler())
+                {
+                    Sitecore.Data.Items.Item myRootItem = database.Items.GetItem(txtNode.Text);
+                    if (myRootItem != null)
+                    {
+                        if (ddluserlist.SelectedValue.Equals("all"))
+                        {
+                            RecursiveUnlockItems(myRootItem, "");
+                        }
+                        else
+                        {
+                            RecursiveUnlockItems(myRootItem, ddluserlist.SelectedValue);
+                        }
+                    }
+                    else
+                    {
+                        Response.Write("Node doesn't exsist");
+                    }
+                }
+            }
+            else
+            {
+                Response.Write("Fill a node into the field");
+            }
+        }
+        protected void RecursiveShowLockedItems(Sitecore.Data.Items.Item rootItem, string userName)
+        {
+
+            if (rootItem != null)
+            {
+                LockField lockField = rootItem.Fields[Sitecore.FieldIDs.Lock];
+                if (lockField != null)
+                {
+                    //releasing items by just 1 user
+                    if (userName.Length > 0 && string.Compare(userName, lockField.Owner, true) == 0)
+                    {
+                        if(litLockedItems.Text == "No locked items") litLockedItems.Text = "";
+                        litLockedItems.Text = litLockedItems.Text + "\"" + rootItem.Paths.FullPath + "\" <strong>is Locked By:</strong> "+ userName +"<br />\n";
+                    }
+                    else if (userName.Length == 0 && lockField.Owner.Length != 0)
+                    {
+                        if (litLockedItems.Text == "No locked items") litLockedItems.Text = "";
+                        litLockedItems.Text = litLockedItems.Text + "\"" + rootItem.Paths.FullPath + "\" <strong>is Locked By:</strong> " + lockField.Owner + "<br />\n";
+                    }
+                }
+
+                if (rootItem.HasChildren)
+                {
+                    foreach (Sitecore.Data.Items.Item childItem in rootItem.Children)
+                    {
+                        RecursiveShowLockedItems(childItem, userName);
+                    }
+                }
+            }
+
+        }
+
+        protected void RecursiveUnlockItems(Sitecore.Data.Items.Item rootItem, string userName)
+        {
+            if (rootItem != null)
+            {
+                LockField lockField = rootItem.Fields[Sitecore.FieldIDs.Lock];
+                if(lockField != null)
+                {
+                    //releasing items by just 1 user
+                    if (userName.Length > 0 && string.Compare(userName, lockField.Owner, true) == 0)
+                    {
+                        lockField.ReleaseLock();
+                        if (litLockedItems.Text == "No locked items") litLockedItems.Text = "";
+                        litLockedItems.Text = litLockedItems.Text + "Unlocked: " + rootItem.Paths.FullPath + "<br />\n";
+                    }
+                    //releasing all locked items
+                    else if (userName.Length == 0 && lockField.Owner.Length != 0)
+                    {
+                        lockField.ReleaseLock();
+                        if (litLockedItems.Text == "No locked items") litLockedItems.Text = "";
+                        litLockedItems.Text = litLockedItems.Text + "Unlocked: " + rootItem.Paths.FullPath + "<br />\n";
+                    }                    
+                }                
+
+                if (rootItem.HasChildren)
+                {
+                    foreach (Sitecore.Data.Items.Item childItem in rootItem.Children)
+                    {
+                        RecursiveUnlockItems(childItem, userName);
+                    }
+                }
+            }
+
+        }
+    }
+}

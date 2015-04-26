@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Title goes here...</title>
+		<link rel="stylesheet" type="text/css" href="screen.css" />
+		<!-- Responsive design -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body>		
+		<nav> </nav>
+	</body>
+</html>

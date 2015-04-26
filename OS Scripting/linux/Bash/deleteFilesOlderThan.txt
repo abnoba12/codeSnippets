@@ -1,0 +1,6 @@
+#!/bin/bash
+#Delete files older than 10 days. Remove the -type f option if you want to include directories older then 10 days also.
+find ~/localBackup -type f -mtime +10 -exec rm '{}' \; 2>&1 | tee -a locallog.txt
+
+
+

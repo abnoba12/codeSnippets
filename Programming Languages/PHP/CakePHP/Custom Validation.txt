@@ -1,0 +1,48 @@
+-- In the model's Validation area. --
+-- Make a new validation with any name you please. Then in the rule array place the function name that will be called to preform the validation -- 
+
+		public $validate = array(
+		'first_location' => array(
+			'notEmpty' => array(
+				'rule' => array('notEmpty'),
+				'message' => 'Please select your first location'
+			),
+			'preventSelfLink' => array( 
+				'rule' => array('preventSelfLink'), 
+				'message' => 'You can\'t link a location to itself.' 
+			)	
+		),
+		'second_location' => array(
+			'notEmpty' => array(
+				'rule' => array('notEmpty'),
+				'message' => 'Please select your second location'
+			),
+			'preventSelfLink' => array( 
+				'rule' => array('preventSelfLink'), 
+				'message' => 'You can\'t link a location to itself.' 
+			)	
+		),
+	);
+
+-- Add the custom validation function at the bottom of the model --		
+	/**
+	********* Custom Validation *********
+	*/	
+		
+	/**
+	* Make sure first_location is not the same value as second_location
+	* 
+	*/	
+		public function preventSelfLink() {
+			if(isset($this->data['LinkedLocation']['first_location']) && isset($this->data['LinkedLocation']['second_location'])){			
+				//Make sure the user isn't linking a location to itself
+				if($this->data['LinkedLocation']['first_location'] == $this->data['LinkedLocation']['second_location']){
+					//False means we failed validation.
+					return FALSE;
+				}
+			}
+			//Return true means we passed validation
+			return TRUE;
+		}
+		
+	

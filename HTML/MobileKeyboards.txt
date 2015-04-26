@@ -1,0 +1,21 @@
+-- Different types of keyboards --
+	-- Regex Pattern --
+	type="text" pattern="[0-9]*"
+	
+	-- Telephone Number --
+	type="tel"
+	
+	-- Email --
+	type="email"
+	
+	-- URL --
+	type="url"
+	
+	-- Number -- 
+	type="number" step="0.5"
+	--- If you want to remove the number spinner this adds then use this CSS ---
+		input[type=number]::-webkit-inner-spin-button, 
+		input[type=number]::-webkit-outer-spin-button { 
+		  -webkit-appearance: none; 
+		  margin: 0; 
+		}

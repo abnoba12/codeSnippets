@@ -1,0 +1,53 @@
+-------- In the web.config --------
+<event name="publish:itemProcessing" help="Receives an argument of type ItemProcessingEventArgs (namespace: Sitecore.Publishing.Pipelines.PublishItem)" >
+	<handler type="Website.TCWAdmin.Events.ItemPublisher, Website" method="UpdatePublishDate" />
+</event>
+
+-------- In file \WebSite\TCWAdmin\Events\ItemPublisher.cs ----------
+using Sitecore;
+using Sitecore.Data.Items;
+using Sitecore.Events;
+using Sitecore.Publishing;
+using Sitecore.Publishing.Pipelines.PublishItem;
+using Sitecore.Jobs;
+using System;
+using Sitecore.Data; 
+
+namespace Website.TCWAdmin.Events
+{
+    public class ItemPublisher
+    {
+        public void UpdatePublishDate(object sender, EventArgs args)
+        {
+            ItemProcessingEventArgs theArgs = args as ItemProcessingEventArgs;
+
+            Item currentItem = theArgs.Context.PublishHelper.GetSourceItem(theArgs.Context.ItemId);
+
+            Job currentJob = theArgs.Context.Job;
+            JobStatus currentJobStatus = currentJob.Status;
+
+            //Make sure we have the item
+            if ((currentItem != null) && (currentItem.Paths.IsContentItem || currentItem.Paths.IsMediaItem))
+            {
+                //Make sure the two fields we need exist
+                if (currentItem.Fields["Publish Date"] != null && currentItem.Fields["Update On Publish"] != null)
+                {
+                    if (currentItem.Fields["Update On Publish"].Value == "1")
+                    {
+                        currentItem.Editing.BeginEdit();
+                        try
+                        {
+                            currentItem.Fields["Publish Date"].Value = Sitecore.DateUtil.ToIsoDate(DateTime.Now);
+                            currentItem.Editing.EndEdit();
+                        }
+                        catch (System.Exception ex)
+                        {
+                            Sitecore.Diagnostics.Log.Error("Could not update the Publish Date for item " + currentItem.Paths.FullPath + ": " + ex.Message, this);
+                            currentItem.Editing.CancelEdit();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

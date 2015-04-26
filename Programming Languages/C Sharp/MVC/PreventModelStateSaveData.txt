@@ -1,0 +1,7 @@
+//When a form is submitted the model state saves those values and repopulates the data. This goes into the model state and removes that data.
+//We don't want to remove all the model state data because this is where the validation data is kept.
+
+for (int x = 0; x < ModelState.Values.Count; x++)
+{
+	ModelState.Values.ElementAt(x).Value = null;
+}

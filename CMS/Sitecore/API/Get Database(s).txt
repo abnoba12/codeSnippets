@@ -1,0 +1,14 @@
+--- Getting a list of all databases ---
+	--- ASPX File ---
+	<p>Which database would you like?</p>
+	<asp:DropDownList runat="server" ID="databases"></asp:DropDownList>
+
+	--- CS File ---
+	databases.DataSource = Sitecore.Configuration.Factory.GetDatabases();
+	databases.DataTextField = "Name";
+	databases.DataValueField = "Name";
+	databases.DataBind();
+
+--- Get a Database by it's context ---
+//Get database by context
+Sitecore.Data.Database database = Sitecore.Context.ContentDatabase == null ? Sitecore.Context.Database : Sitecore.Context.ContentDatabase;

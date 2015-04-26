@@ -1,0 +1,18 @@
+--- ASCX file
+<asp:PlaceHolder runat="server" ID="altThumb" />
+	
+--- CS File ---	
+	var altThumb = e.Item.FindControl("altThumb") as PlaceHolder;
+	
+	//Adding a Hyperlink to a placeholder
+	HyperLink docImage = new HyperLink();
+	docImage.Attributes["class"] = "search_img";
+	docImage.Text = "<img src=\"/static/images/word_ico2.jpg\" />";
+	docImage.NavigateUrl = doc.URL;
+	altThumb.Controls.Add(docImage);
+		  
+	//Adding a span or generic HTML element to a place holder
+	var span = new HtmlGenericControl("span");
+	span.InnerHtml = "";
+	span.Attributes["class"] = "search_img";
+	altThumb.Controls.Add(span);

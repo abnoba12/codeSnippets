@@ -1,0 +1,7 @@
+
+-- Got yas ---
+* Cross browser testing (Current all, IE8+)
+* Prevent double submission
+* Is there anything that can be pre-populated or auto-populated
+* Are all the inputs fully validated
+* Are all URLs relative to the application and not hard coded paths

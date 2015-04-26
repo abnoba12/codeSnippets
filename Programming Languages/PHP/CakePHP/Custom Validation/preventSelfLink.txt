@@ -1,0 +1,34 @@
+-- Prevent two items from pointing at the same value --
+
+	public $validate = array(
+		'first_location' => array(
+			'preventSelfLink' => array( 
+		        'rule' => array('preventSelfLink'), 
+		        'message' => 'You can\'t link a location to itself.' 
+		    ),	
+		),
+		'second_location' => array(
+			'preventSelfLink' => array( 
+		        'rule' => array('preventSelfLink'), 
+		        'message' => 'You can\'t link a location to itself.' 
+		    ),
+		),
+	);
+	
+	/**
+	********* Custom Validation *********
+	*/	
+		
+	/**
+	* Make sure the two links don't link to themself
+	* 
+	*/	
+		public function preventSelfLink() {
+			if(isset($this->data['LinkedLocation']['first_location']) && isset($this->data['LinkedLocation']['second_location'])){			
+				//Make sure the user isn't linking a location to itself
+				if($this->data['LinkedLocation']['first_location'] == $this->data['LinkedLocation']['second_location']){
+					return FALSE;
+				}
+			}
+			return TRUE;
+		}

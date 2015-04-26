@@ -1,0 +1,2 @@
+<xsl:variable name="comp" select="document($internalLink/@xlink:href)"/>
+<a compURI="{$comp/tcm:Component/@ID}" pubURI="{$comp/tcm:Component/tcm:Context/tcm:Publication/@xlink:href}">link</a>

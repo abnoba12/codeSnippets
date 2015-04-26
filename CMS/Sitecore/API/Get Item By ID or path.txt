@@ -1,0 +1,34 @@
+//This may require the Security disabler depending on what your trying to access
+//using (new Sitecore.SecurityModel.SecurityDisabler()){
+
+/// <summary>
+/// Find a Sitecore item based on it's ID
+/// </summary>
+/// <param name="itemID">The ID of the Sitecore Item</param>
+/// <returns>The Sitecore Item</returns>
+private Sitecore.Data.Items.Item parseItemByID(String itemID)
+{
+	Sitecore.Data.Database database = Sitecore.Context.ContentDatabase == null ? Sitecore.Context.Database : Sitecore.Context.ContentDatabase;     	
+	Sitecore.Data.Items.Item myItem = database.Items.GetItem(new Sitecore.Data.ID(itemID));
+	if (myItem == null)
+	{
+		Sitecore.Diagnostics.Log.Error("Could not find item with id: " + itemID, this);
+		return null;
+	}
+	return myItem;
+}
+
+private Sitecore.Data.Items.Item parseItemByPath(String path)
+{
+	Sitecore.Data.Database database = Sitecore.Context.ContentDatabase == null ? Sitecore.Context.Database : Sitecore.Context.ContentDatabase;  
+	Sitecore.Data.Items.Item myItem = database.Items.GetItem(path);
+	if (myItem == null)
+	{
+		Sitecore.Diagnostics.Log.Error("Could not find item with id: " + myItem, this);
+		return null;
+	}
+	return myItem;
+}
+
+var testField = parseItemByID("{BB07A18A-580D-4105-9A1D-F3072D1A0BE3}").Fields["title"];
+if (testField != null) Response.Write(testField.Value);

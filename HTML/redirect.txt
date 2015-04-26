@@ -1,0 +1,16 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Redirecting to main page</title>
+<meta http-equiv="REFRESH" content="0;url=http://www.weigandfamily.com/main">
+</head>
+<body>
+<style>
+	body{background-color: #0088BC;}
+	p{text-align: center; font-size: 1.5em;}
+	img{margin: 30px auto; width: 55px; height: 55px; display: block;}
+</style>
+<img src="img/w.png" alt="W Logo">
+<p>Please wait while you're redirected to the new Weigand Family Website</p>
+</body>
+</html>

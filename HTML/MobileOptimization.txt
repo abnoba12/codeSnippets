@@ -1,0 +1,41 @@
+************ NOTES: ***********
+	<!-- you can instruct MobileSafari to zoom into a web pages content by default.-->
+	<meta name = "viewport" content = "width = device-width">
+	<!-- To set the initial scale to 1.0, add this to the head of your HTML file:-->
+	<meta name = "viewport" content = "initial-scale = 1.0">
+	<!-- To set the initial scale and to turn off user scaling, add this to the head of your HTML file: -->
+	<meta name = "viewport" content = "initial-scale = 2.3, user-scalable = no">
+
+<!-- The following javascript detects and sets the iPhone’s viewport orientation by evaluating the innerWidth property of the window object and setting the orient attribute of the body element at regular intervals: -->
+var updateLayout = function() {
+  if (window.innerWidth != currentWidth) {
+    currentWidth = window.innerWidth;
+    var orient = (currentWidth == 320) ? "profile" : "landscape";
+    document.body.setAttribute("orient", orient);
+    window.scrollTo(0, 1);
+  }
+};
+
+iPhone.DomLoad(updateLayout);
+setInterval(updateLayout, 500);
+
+
+<!-- With one line of JavaScript you can hide the big toolbar: -->
+window.scrollTo(0, 1);
+
+
+********* EXAMPLE CODE: ***********
+<head>	
+	<!--This and the line in the body tag are the apple magic lines-->
+	<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0;" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	
+	
+	<link rel="apple-touch-icon" href="images/homescreen_ico.png"/>
+	<link rel="apple-touch-startup-image" href="images/splash.png" />
+
+</head>
+
+<body onorientationchange="updateOrientation();">
+</body>

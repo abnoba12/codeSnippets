@@ -1,0 +1,8 @@
+-- Iterate over all sitecore items --
+	Sitecore.Data.Database database = Sitecore.Data.Database.GetDatabase("master");
+    Sitecore.Data.Items.Item[] items = database.SelectItems("fast:/sitecore/content/Home/descendant::*");
+	
+	foreach (Sitecore.Data.Items.Item singleItem in items)
+	{
+	
+	}

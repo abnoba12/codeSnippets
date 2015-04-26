@@ -1,0 +1,60 @@
+-- Create --
+	using (var dbContext = new JHilburnDBContext())
+	{
+		//Create new object
+		Order_Detail newOD = new Order_Detail();
+		
+		//Add it
+		dbContext.Order_Detail.Add(newOD);
+		
+		//Save changes
+		dbContext.SaveChanges();
+	}
+
+-- Remove an object from the database context (This is used when you want to modify an EF object that is mapped to other things that you don't want to change)-- 
+	using (var dbContext = new JHilburnDBContext())
+	{
+		//Create new object
+		Order_Detail newOD = remakeSportCoat.Order_Detail;
+		
+		//detach the new order detail from the  dbContext so it doesn't effect the sport coat object when saving
+		Order_Detail newOD = remakeSportCoat.Order_Detail;
+		var EntityObjectContext = ((IObjectContextAdapter)dbContext).ObjectContext;
+		EntityObjectContext.Detach(newOD);
+		
+		//Add it
+		dbContext.Order_Detail.Add(newOD);
+		
+		//Save changes
+		dbContext.SaveChanges();
+	}
+	
+--Fluent API Mappings. This goes in the map files. 
+	----One to many relationship defined both ways. Having it defined in both files allows you to trace in either direction.
+		------ Inside of the Customer_AddressMap file ------
+			this.HasRequired(x => x.Customer)
+				.WithMany(y => y.Customer_Address)
+				.HasForeignKey(z => z.Customer_ID);
+				
+		------ Inside of the CustomerMap file ------
+		this.HasMany(t => t.Customer_Address)
+            .WithRequired(x => x.Customer)
+            .HasForeignKey(y => y.Customer_ID);
+			
+	---- Many to Many relationship ----
+		------ Inside of the CustomerMap file ------
+			this.HasMany(t => t.EMail_Details)
+				.WithMany(t => t.Customers)
+				.Map(m =>
+					{
+						m.ToTable("EMail_Details_Customers");
+						m.MapLeftKey("Customer_ID");
+						m.MapRightKey("EMail_Detail_ID");
+					});
+					
+	---- Many to one relationship, defined one way ----
+		------ Inside of the Customer_StylesMap ------
+		this.HasRequired(x => x.Shirt_Back_Type)
+                .WithMany(y => y.Customer_Styles)
+                .HasForeignKey(z => z.Shirt_Back_Type_ID)
+                .WillCascadeOnDelete(false);

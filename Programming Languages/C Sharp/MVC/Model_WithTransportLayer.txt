@@ -1,0 +1,190 @@
+-- A Model with mapped relationships --
+	using System;
+	using System.Collections.Generic;
+	using System.ComponentModel.DataAnnotations;
+	using System.ComponentModel.DataAnnotations.Schema;
+	using System.Data.Entity.Infrastructure;
+	using System.Data.SqlClient;
+	using System.Web.UI;
+
+	namespace OMS40.DBModel
+	{
+		public partial class Customer_Styles
+		{
+			public int Customer_Styles_ID { get; set; }
+			public int Customer_ID { get; set; }
+
+			[Required]
+			[Display(Name = "Style Profile Name")]
+			public string Style_Profile_Name { get; set; }
+
+			[Required]
+			[Display(Name = "Collar")]
+			public int Shirt_Collar_Type_ID { get; set; }
+
+			[Required]
+			[Display(Name = "Cuff")]
+			public int Shirt_Cuff_Type_ID { get; set; }
+
+			[Required]
+			[Display(Name = "Front")]
+			public int Shirt_Front_Type_ID { get; set; }
+
+			[Required]
+			[Display(Name = "Back")]
+			public int Shirt_Back_Type_ID { get; set; }
+
+			[Required]
+			[Display(Name = "Pocket")]
+			public int Shirt_Pocket_Type_ID { get; set; }
+
+			[Display(Name = "Comments")]
+			public string Customer_Style_Comments { get; set; }
+			public string Corporate_Style_Comments { get; set; }
+			public bool Active { get; set; }
+			public System.DateTime Last_Modified_Date { get; set; }
+			public string Last_Modified_By { get; set; }
+			public System.DateTime Created_Date { get; set; }
+			public string Created_By { get; set; }
+			public Nullable<bool> Comments_Approved { get; set; }
+
+			[Display(Name = "2 Pocket")]
+			public Nullable<bool> Two_Pockets { get; set; }
+			public Nullable<int> Edge_Stitch_Type_ID { get; set; }
+			public Nullable<int> Shirt_Interlining_Type_ID { get; set; }
+			public Nullable<decimal> Cuff_Width { get; set; }
+			public Nullable<decimal> Collar_Point { get; set; }
+			public Nullable<int> Tie_Space_ID { get; set; }
+			public Nullable<decimal> Pen_Pocket_Width { get; set; }
+			public Nullable<int> Bias_ID { get; set; }
+
+			//Relationships
+			public virtual Shirt_Back_Type Shirt_Back_Type { get; set; }
+			public virtual Shirt_Collar_Type Shirt_Collar_Type { get; set; }
+			public virtual Shirt_Cuff_Type Shirt_Cuff_Type { get; set; }
+			public virtual Shirt_Front_Type Shirt_Front_Type { get; set; }
+			public virtual Shirt_Pocket_Type Shirt_Pocket_Type { get; set; }
+
+			#region Transport Layer
+
+			/// <summary>
+			/// Creates or updates a customer's style profile in the database
+			/// </summary>
+			/// <returns>The result of the SP</returns>
+			public int Save()
+			{
+				//Make a call to the Customer_Style_Save SP to make a new Shirt Style profile
+				using (JHilburnDBContext context = new JHilburnDBContext())
+				{
+					Page page = new Page();
+					int partnerId = Convert.ToInt32(page.User.Identity.Name);
+
+					List<SqlParameter> paramList = new List<SqlParameter>();
+					paramList.Add(new SqlParameter("Customer_Styles_ID", this.Customer_Styles_ID));
+					paramList.Add(new SqlParameter("Customer_ID", this.Customer_ID));
+					paramList.Add(new SqlParameter("Style_Profile_Name", this.Style_Profile_Name));
+					paramList.Add(new SqlParameter("Shirt_Collar_Type_Id", this.Shirt_Collar_Type_ID));
+					paramList.Add(new SqlParameter("Shirt_Cuff_Type_Id", this.Shirt_Cuff_Type_ID));
+					paramList.Add(new SqlParameter("Shirt_Front_Type_Id", this.Shirt_Front_Type_ID));
+					paramList.Add(new SqlParameter("Shirt_Back_Type_Id", this.Shirt_Back_Type_ID));
+					paramList.Add(new SqlParameter("Shirt_Pocket_Type_Id", this.Shirt_Pocket_Type_ID));
+					if (this.Shirt_Interlining_Type_ID == null)
+						paramList.Add(new SqlParameter("Shirt_Interlining_Type_ID", DBNull.Value));
+					else
+						paramList.Add(new SqlParameter("Shirt_Interlining_Type_ID", this.Shirt_Interlining_Type_ID));
+					paramList.Add(new SqlParameter("Customer_Style_Comments", String.IsNullOrEmpty(this.Customer_Style_Comments) ? "" : this.Customer_Style_Comments));
+					if (this.Two_Pockets == null)
+						paramList.Add(new SqlParameter("Two_Pockets", DBNull.Value));
+					else
+						paramList.Add(new SqlParameter("Two_Pockets", this.Two_Pockets));
+					paramList.Add(new SqlParameter("User", partnerId));
+
+					return context.Database.ExecuteSqlCommand(@"Customer_Style_Save @Customer_Styles_ID, @Customer_ID, @Style_Profile_Name, @Shirt_Collar_Type_Id, @Shirt_Cuff_Type_Id, 
+																@Shirt_Front_Type_Id, @Shirt_Back_Type_Id, @Shirt_Pocket_Type_Id, @Shirt_Interlining_Type_ID, @Customer_Style_Comments,
+																@Two_Pockets, @User", paramList.ToArray());
+				}
+			}        
+
+			/// <summary>
+			/// Returns a single instance of Customer_Styles based on Customer_Styles_ID
+			/// </summary>
+			/// <param name="Customer_Styles_ID"></param>
+			public static Customer_Styles Get(int Customer_Styles_ID = 0)
+			{
+				using (JHilburnDBContext internalContext = new JHilburnDBContext())
+				{
+					Customer_Styles cs = internalContext.Customer_Styles.Find(Customer_Styles_ID);
+
+					//Seeing the DBContext is limited to this read function we want to make sure the DBContext is detached before we return the object
+					//this way the relationships can not be used. If you want to use the relationships then make the call to EF yourself and don't use Read().
+					var EntityObjectContext = ((IObjectContextAdapter)internalContext).ObjectContext;
+					EntityObjectContext.Detach(cs);
+					return cs;
+				}
+			}
+			#endregion
+		}
+	}
+	
+-- A Model with extension methods --
+
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+
+	namespace OMS40.DBModel
+	{
+		public partial class Shirt_Cuff_Type
+		{
+			public int Shirt_Cuff_Type_ID { get; set; }
+			public string Shirt_Cuff_Type_Name { get; set; }
+			public bool Active { get; set; }
+			public string Factory_code { get; set; }
+
+			//Relationships
+			public virtual ICollection<Customer_Styles> Customer_Styles { get; set; }
+
+			#region Transport Layer
+
+			/// <summary>
+			/// Returns a single instance of Shirt_Cuff_Type based on Shirt_Cuff_Type_ID
+			/// </summary>
+			/// <param name="Shirt_Cuff_Type_ID"></param>
+			/// <returns></returns>
+			public static Shirt_Cuff_Type Get(int Shirt_Cuff_Type_ID)
+			{
+				return Shirt_Cuff_Type.Get().Where(x => x.Shirt_Cuff_Type_ID == Shirt_Cuff_Type_ID).FirstOrDefault();
+			}
+
+			/// <summary>
+			/// Returns a list of all Shirt_Cuff_Type items from the database
+			/// </summary>
+			/// <returns></returns>
+			public static List<Shirt_Cuff_Type> Get()
+			{            
+				return CachedDataManager.GetCachedItem("All_Shirt_Cuff_Type", () =>
+				{
+					using (JHilburnDBContext context = new JHilburnDBContext())
+					{
+						return context.Shirt_Cuff_Type.ToList();
+					}
+				});
+			}
+		}
+
+		public static class ShirtCuffExtensions
+		{
+			/// <summary>
+			/// Returns only the active Shirt Cuff types
+			/// </summary>
+			/// <param name="Cuffs"></param>
+			/// <returns></returns>
+			public static List<Shirt_Cuff_Type> IsActive(this List<Shirt_Cuff_Type> Cuffs)
+			{
+				return Cuffs.Where(x => x.Active == true).ToList();
+			}
+		}    
+		
+		#endregion
+	}
+

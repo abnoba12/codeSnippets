@@ -1,0 +1,7 @@
+<xsl:template match="/">
+	<xsl:apply-templates select="/" mode="copy"/>
+</xsl:template>
+	
+<xsl:template match="*|text()" mode="copy">		
+	<textarea><xsl:copy-of select="*"/></textarea>
+</xsl:template>

@@ -1,0 +1,84 @@
+files:
+	- Website\Scripts\jquery.validate.requiredifattribute.js
+	- Website\Utilities\RequiredIfAttribute\RequiredIfAttribute.cs
+	- add Javascript include in master file
+
+Source:
+	Origional Code: http://mvcdiary.com/2013/02/28/conditional-required-validation-or-field-mandatory-depends-on-another-field-mvc-4/
+	-- Many custom additions have been made by Jacob Weigand to add functionality for this -- 
+
+Note: The name used for the form name must be the same name in the Model as the HTML Id for that element.
+	So if it is named "State" in the model then the id for that element must also be "State"
+Using RequiredIf:
+	1. Create a RequiredIfAttribute.cs file and add it to a folder 
+		\Website\Validation\
+		
+	2. Create js validation and js unobtrusive validation, add them to your javascript folder
+		\Website\Scripts\
+		
+	3. Include the reference for the validation js, I notice that it only works before the unobtrusive javascript,
+		
+			<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+			<script src="~/Scripts/jquery.validate.min.js"></script>
+			<script src="~/Scripts/jquery.validate.requiredif.js"></script>
+			<script src="~/Scripts/jquery.validate.unobtrusive.min.js"></script>
+		
+	4. Using RequiredIf in your Model:
+		//Include the RequiredIf library
+		using StonebridgeJCP.Validation.RequiredIfAttribute;	
+		
+		//Example Fields///////////////////////////////////////////////////////////////////
+		[Required]
+		public bool HasReceipt { get; set; }
+		
+		[Display(Name = "Card Type:")]
+		public string CardType { get; set; }
+		
+		[Display(Name = "Payment Method")]
+		public string PaymentMethod { get; set; }
+		///////////////////////////////////////////////////////////////////////////////////	
+		 
+		//Standard RequiredIf, this will go to the "HasReceipt" field and check to see if it's value is
+		//true. If the value is true then "PurchaseDate" is required and will display the "ErrorMessage"
+		//if you don't fill out this field
+		[RequiredIf("HasReceipt", true, ErrorMessage = "You must enter purchase date")]
+		[Display(Name="Purchase Date")]
+		public DateTime? PurchaseDate { get; set; }
+		
+		//Negation RequiredIf, you can negate conditions by adding ! to be beginning of the value. 
+		//First name will be required if the "CardType" field is equal to anything except "MasterCard".
+		[RequiredIf("CardType", "!MasterCard", ErrorMessage = "You must enter your name")]
+		[StringLength(25, ErrorMessage = "First name is longer then 25 characters.")]
+		[Display(Name = "First Name:")]
+		public string FirstName { get; set; }
+		
+		//Wild card RequiredIf, you can use * to as a wild card search (This must be used alone and not within a string e.g "John*" won't work). 
+		//First name will be required if the "CardType" field is equal to anything.
+		[RequiredIf("CardType", "*", ErrorMessage = "You must enter your name")]
+		[StringLength(25, ErrorMessage = "First name is longer then 25 characters.")]
+		[Display(Name = "First Name:")]
+		public string FirstName { get; set; }		
+		
+		//Required value RequiredIf. If a field must be answered with a specific value when the field is required
+		//you can add another parameter to specify what that answer must me. Below we have an
+		//"CreditDebitAuthorizationCheckBox" field and it is only required when "PaymentMethod" equals "C" standing
+		//for credit card. So the "CreditDebitAuthorizationCheckBox" must be true when the "PaymentMethod" is "C"
+		//otherwise you will get the "ErrorMessage"
+		[RequiredIf("PaymentMethod", "C", true , ErrorMessage = "Please grant credit/debit authorization.")]
+		public bool CreditDebitAuthorizationCheckBox { get; set; }
+		
+		//Multiple AND requirements for a field. If multiple fields must be set to specific values for a field to be
+		//set you can pass in a object array as parameters. If the "PaymentMethod" equals "C" and "HasReceipt" is
+		//false then we will require the user to enter their email address. These arrays can be any size.
+		[RequiredIf(new object[2] { "PaymentMethod", "HasReceipt" }, new object[2] { "C", false }, ErrorMessage = "Please enter your email address.")]	
+		[StringLength(50, ErrorMessage = "Email is longer then 50 characters.")]
+		[Display(Name = "Email:")]
+		public string Email { get; set; }
+		
+		//Multiple OR requirements for a field. If there are different fields that can be set to make your current
+		//field required you can chain the RequiredIf like below. If the "PaymentMethod" equals "B" or "HasReceipt"
+		//is false then we will require the user to enter their address.
+		[RequiredIf("PaymentMethod", "B", ErrorMessage = "Please enter your address.")]
+		[RequiredIf("HasReceipt", false, ErrorMessage = "Please enter your address.")]
+		[Display(Name = "Address:")]
+		public string Address { get; set; }

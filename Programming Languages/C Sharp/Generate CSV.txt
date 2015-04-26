@@ -1,0 +1,66 @@
+protected void Page_Load(object sender, EventArgs e)
+{
+	//Build the csv data
+	String csvData = buildCSVData(memberCollection);
+
+	//Generate a CSV file
+	string attachment = "attachment; filename=users.csv";
+	HttpContext.Current.Response.Clear();
+	HttpContext.Current.Response.ClearHeaders();
+	HttpContext.Current.Response.ClearContent();
+	HttpContext.Current.Response.AddHeader("content-disposition", attachment);
+	HttpContext.Current.Response.ContentType = "text/csv";
+	HttpContext.Current.Response.AddHeader("Pragma", "public");
+
+	HttpContext.Current.Response.Write(csvData);
+	HttpContext.Current.Response.End();
+}
+
+private static String buildCSVData(MembershipUserCollection memberCollection)
+{
+	var sb = new StringBuilder();
+
+	//Add Header
+	sb.AppendLine("Domain \\ User Name,Full Name,Role,Comments,Status");
+
+	foreach (MembershipUser m in memberCollection)
+	{
+		sb.AppendLine();
+		String userName;
+		String fullName;
+		String role;
+		String tree;
+		String status;
+
+		userName = addQuotes(m.UserName);
+		Sitecore.Security.Accounts.User user = Sitecore.Security.Accounts.User.FromName(@m.UserName.ToString(), true);
+		fullName = addQuotes(user.Profile.FullName);
+		String userRoleText = "";
+		if (user.IsAdministrator)
+		{
+			userRoleText = "Administrator";
+		}
+		foreach (Sitecore.Security.Accounts.Role userRole in user.Roles)
+		{
+			if (userRoleText == "")
+			{
+				userRoleText = userRoleText + userRole.Name.Replace("sitecore\\", "");
+			}
+			else
+			{
+				userRoleText = userRoleText + ", " + userRole.Name.Replace("sitecore\\", "");
+			}
+		}
+		role = addQuotes(userRoleText);
+		tree = addQuotes(user.Profile.Comment);
+		status = addQuotes(user.Profile.State);
+
+		sb.AppendLine(userName + "," + fullName + "," + role + "," + tree + "," + status);
+	}
+	return sb.ToString();
+}
+
+private static string addQuotes(string input)
+{
+	return "\"" + input + "\"";
+}

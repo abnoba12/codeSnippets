@@ -1,0 +1,147 @@
+--- aspx File ---
+<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="MarketingSchoolsModule.ascx.cs" Inherits="Website.Layouts.SubLayouts.Modules.MarketingSchoolsModule" %>
+
+<div class="marketing_schools_module">
+    <asp:Repeater runat="server" ID="Schools" OnItemDataBound="SetSchools">    
+        <ItemTemplate>
+            <div>
+            <h1><asp:Literal runat="server" ID="schoolName" /></h1>
+                <asp:Repeater runat="server" ID="programList" OnItemDataBound="SetPrograms">
+                    <HeaderTemplate><ul></HeaderTemplate>
+                    <ItemTemplate>
+                        <li><asp:HyperLink runat="server" ID="Link" /><asp:Literal runat="server" ID="Location" /></li>
+                    </ItemTemplate>
+                    <FooterTemplate></ul></FooterTemplate>
+                </asp:Repeater>
+            </div>
+        </ItemTemplate>    
+    </asp:Repeater>
+</div>
+<div class="rich-text-page-module">
+    <%= Body %>
+</div>
+
+--- CS File ---
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using Website.BusinessLogic.Search;
+using Siteworx.Utility;
+
+namespace Website.Layouts.SubLayouts.Modules
+{
+    public partial class MarketingSchoolsModule : ModuleControlBase<BusinessLogic.Modules.MarketingSchoolsModule>
+    {
+        protected string Body;
+        public class schoolOf
+        {
+            public String schoolName;
+            public List<BusinessLogic.Pages.MarketingPage> list;
+
+            public schoolOf(String p1, BusinessLogic.Pages.MarketingPage p2)
+            {
+                schoolName = p1;
+                list = new List<BusinessLogic.Pages.MarketingPage>();
+                list.Add(p2);
+            }
+        }
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            Body = CurrentModule.Body;
+            List<schoolOf> schoolList = new List<schoolOf>();
+
+            //Gather up all the Degrees in the marketing section
+            Sitecore.Data.Database database = Sitecore.Context.Database;
+            if (database == null)
+            {
+                database = Sitecore.Data.Database.GetDatabase("master");
+            }
+            //Get all marketing programs "Content type = Program"
+            Sitecore.Data.Items.Item[] degreeItems = database.SelectItems("fast:/sitecore/content/Westwood/Home/#request-info#/descendant::*[@Content Type=\"{88083747-8B40-4095-9B04-5F9042C3614C}\"]");
+
+            //Get current page
+            BusinessLogic.Pages.MarketingPage currentPage = BusinessLogic.Context.Current<BusinessLogic.Pages.MarketingPage>();
+
+            //If the current item is a state
+            if (currentPage != null && currentPage.ContentType.Value == "campus")
+            {
+                //check every degree to see if it is offered in the current state
+                foreach (Sitecore.Data.Items.Item sitecoreDegree in degreeItems)
+                {
+                    BusinessLogic.Pages.MarketingPage degree = BusinessLogic.Context.Get<BusinessLogic.Pages.MarketingPage>(sitecoreDegree);
+                    if (degree != null && degree.Campuses.Contains(currentPage))
+                    {                        
+                        //See if this school is already in the school list
+                        bool added = false;
+                        for (int x = 0; x < schoolList.Count; x++)
+                        {
+                            if (degree.School != null && schoolList[x].schoolName == degree.School.pageTitle)
+                            {
+                                schoolList[x].list.Add(degree);
+                                added = true;
+                            }
+                        }
+                        if (degree.School != null && !added)
+                        {
+                            schoolOf newSchool = new schoolOf(degree.School.pageTitle, degree);
+                            schoolList.Add(newSchool);
+                        }
+                        
+                    }
+                }
+            }
+
+			//sort then bind the list
+            Schools.DataSource = schoolList.OrderBy(x => x.schoolName).ToList();
+            Schools.DataBind();
+        }
+
+        protected void SetSchools(object sender, RepeaterItemEventArgs e)
+        {
+            var school = e.Item.DataItem as schoolOf;
+            if (school == null) return;
+
+            Literal schoolName = e.Item.FindControl("schoolName") as Literal;
+
+            schoolName.Text = school.schoolName;
+			
+			//As we are processing each item inside of the his repeater we bind the items for it's internal repeater
+            Repeater programRpt = e.Item.FindControl("programList") as Repeater;
+            programRpt.DataSource = school.list;
+            programRpt.DataBind();
+        }
+
+        protected void SetPrograms(object sender, RepeaterItemEventArgs e)
+        {
+            var program = e.Item.DataItem as BusinessLogic.Pages.MarketingPage;
+            if (program == null) return;
+
+            HyperLink link = e.Item.FindControl("Link") as HyperLink;
+            Literal loc = e.Item.FindControl("Location") as Literal;
+
+            String degreeType = "";
+            switch(program.SelectedDegreeType.Value){
+                case "Associate":
+                    degreeType = "(A)";
+                    break;
+                case "Diploma":
+                    degreeType = "(D)";
+                    break;
+                case "Bachelor's":
+                    degreeType = "(B)";
+                    break;
+                case "Master's":
+                    degreeType = "(M)";
+                    break;
+            }
+
+            link.Text = program.pageTitle + " " + degreeType;
+            link.NavigateUrl = program.Url;
+            loc.Text = program.ShortAddress;
+        }
+    }
+}

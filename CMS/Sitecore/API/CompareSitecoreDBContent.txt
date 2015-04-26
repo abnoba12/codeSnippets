@@ -1,0 +1,129 @@
+--- WARNING ---
+This code in untested and NOT finished
+
+--- Note ---
+This can also be done by serializing the two databases that you want to compare and use winmerge on the two folders. You will need to use line filters to ignore the lines like "databse: master" and "database: web". I also recomend not comparing to the master DB because it seems to not hold the data in the exact same way as target DBs.
+
+--- ASPX ---
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="compareDB.aspx.cs" Inherits="IDirect.layouts.debug.compareDB" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head runat="server">
+    <title></title>
+</head>
+<body>
+    <form id="form1" runat="server" method="get">
+    <div>
+        <table>
+            <tr>
+                <td>
+                    <p>Which databases would you like to compare?</p>
+	                <asp:DropDownList runat="server" ID="firstDatabaseDDL"></asp:DropDownList>
+	                <asp:DropDownList runat="server" ID="secondDatabaseDDL"></asp:DropDownList>
+	            </td>
+	            <td>
+	                <p>Sitecore Query for starting comparison location</p>
+	                <p>default location: /sitecore/content/Home</p>
+	                <asp:TextBox runat="server" TextMode="MultiLine" ID="pathQueryTB" />
+	            </td>
+	            <td>
+	                <asp:Button ID="Submit" runat="server" text="Submit" OnClick="SubmitButton" />
+	            </td>
+	        </tr>
+	    </table>
+	    <table>
+	        <asp:Repeater runat="server" ID="output">
+	            <HeaderTemplate></HeaderTemplate>
+                <ItemTemplate>
+                    <tr><td><pre><%# Container.DataItem %></pre></td></tr>
+                </ItemTemplate>
+                <FooterTemplate></FooterTemplate>
+	        </asp:Repeater>
+	    </table>    
+    </div>
+    </form>
+</body>
+</html>
+
+--- CS ---
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace IDirect.layouts.debug
+{
+    public partial class compareDB : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            firstDatabaseDDL.DataSource = Sitecore.Configuration.Factory.GetDatabases();
+            firstDatabaseDDL.DataBind();
+
+            secondDatabaseDDL.DataSource = Sitecore.Configuration.Factory.GetDatabases();
+            secondDatabaseDDL.DataBind();
+        }
+
+        protected void SubmitButton(object sender, EventArgs e)
+        {
+            List<String> differentItems = new List<string>();
+            
+            String firstDatabaseQuery = HttpContext.Current.Request.QueryString["firstDatabaseDDL"];
+            String secondDatabaseQuery = HttpContext.Current.Request.QueryString["secondDatabaseDDL"];
+            String pathQuery = HttpUtility.HtmlDecode(HttpContext.Current.Request.QueryString["pathQueryTB"]);
+
+            if (firstDatabaseQuery != secondDatabaseQuery)
+            {
+                String queryLocation = "/sitecore/content/Home//*";
+                if (pathQueryTB.Text != "")
+                {
+                    queryLocation = pathQuery;
+                }
+
+                Sitecore.Data.Database firstDatabase = Sitecore.Data.Database.GetDatabase(firstDatabaseQuery);
+                Sitecore.Data.Database secondDatabase = Sitecore.Data.Database.GetDatabase(secondDatabaseQuery);
+
+                if (firstDatabase == null) differentItems.Add("First DB is null");
+                if (secondDatabase == null) differentItems.Add("second DB is null");
+
+                if (firstDatabase != null && secondDatabase != null)
+                {
+                    List<Sitecore.Data.Items.Item> firstItems = new List<Sitecore.Data.Items.Item>(firstDatabase.SelectItems("fast:"+queryLocation));
+                    foreach (Sitecore.Data.Items.Item singleItem in firstItems)
+                    {
+                        Sitecore.Data.Items.Item itemInSecondDB = secondDatabase.Items.GetItem(singleItem.ID);
+                        if (itemInSecondDB == null)
+                        {
+                            differentItems.Add(singleItem.Paths.ContentPath + " doesn't exist in the " + secondDatabaseDDL.SelectedIndex.ToString() + " database");
+                        }
+                        else
+                        {
+                            foreach (Sitecore.Data.ID field in singleItem.Fields)
+                            {
+                                if (!itemInSecondDB.Fields.Contains(field))
+                                {
+                                    differentItems.Add(singleItem.Paths.ContentPath + " dosen't have matching field " + field);
+                                }
+                                differentItems.Add(field.ToString());
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                differentItems.Add("You can't compare a database to itself");
+            }
+
+            if(differentItems.Count == 0){
+                differentItems.Add("All Items match");
+            }
+            output.DataSource = differentItems;
+            output.DataBind();
+        }
+    }
+}

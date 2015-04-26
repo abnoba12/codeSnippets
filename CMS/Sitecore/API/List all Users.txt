@@ -1,0 +1,8 @@
+//Get a list of all the users
+MembershipUserCollection memberCollection = Membership.GetAllUsers();
+
+//Add each user do the dropdown list
+foreach (MembershipUser m in memberCollection)
+{
+	m.UserName
+}

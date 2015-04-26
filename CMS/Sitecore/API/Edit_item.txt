@@ -1,0 +1,13 @@
+	//The sitecore item
+	Sitecore.Data.Items.Item result;
+	//Start editing it
+	result.Editing.BeginEdit();
+	try{
+		result.Fields["Title"].Value = program.Title.Trim();
+		result.Editing.EndEdit();
+	}
+	catch (System.Exception ex)
+	{
+		Sitecore.Diagnostics.Log.Error("Could not update item " + result.Paths.FullPath + ": " + ex.Message, this);
+		result.Editing.CancelEdit();
+	}

@@ -1,0 +1,2 @@
+To access the S drive you can do the following in windows explorer:
+\\[server name]\s$

@@ -1,0 +1,41 @@
+-- Make sure this item doesn't already exist in the database --
+
+	public $validate = array(
+		'first_location' => array(
+			'preventDuplicate' => array( 
+		        'rule' => array('preventDuplicate'), 
+		        'message' => 'This combination of locations already exists.' 
+		    ),	
+		),
+		'second_location' => array(
+			'preventDuplicate' => array( 
+		        'rule' => array('preventDuplicate'), 
+		        'message' => 'This combination of locations already exists.' 
+		    ),	
+		),
+	);
+	
+	/**
+	********* Custom Validation *********
+	*/
+	
+	/**
+	* Make sure this link doesn't already exist
+	* 
+	*/	
+		public function preventDuplicate() {
+			if(isset($this->data['LinkedLocation']['first_location']) && isset($this->data['LinkedLocation']['second_location'])){			
+				$options = array('conditions' => array("LinkedLocation.user_id = ".AuthComponent::user('id')));
+				$linkedLocationList = Model::find('all', $options);
+				$addFirstLoc = $this->data['LinkedLocation']['first_location'];
+				$addSecondLoc = $this->data['LinkedLocation']['second_location'];
+				
+				//Make sure the linked location doesn't already exist
+				foreach($linkedLocationList as $value){				
+					if($addFirstLoc == $value['LinkedLocation']['first_location'] && $addSecondLoc == $value['LinkedLocation']['second_location']){
+						return FALSE;
+					}
+				}	
+			}
+			return TRUE;
+		}

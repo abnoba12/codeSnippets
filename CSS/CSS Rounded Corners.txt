@@ -1,0 +1,34 @@
+CSS
+ /* set millions of background images */
+.rbroundbox { background: url(nt.gif) repeat; }
+.rbtop div { background: url(tl.gif) no-repeat top left; }
+.rbtop { background: url(tr.gif) no-repeat top right; }
+.rbbot div { background: url(bl.gif) no-repeat bottom left; }
+.rbbot { background: url(br.gif) no-repeat bottom right; }
+
+/* height and width stuff, width not really nessisary. */
+.rbtop div, .rbtop, .rbbot div, .rbbot {
+width: 100%;
+height: 7px;
+font-size: 1px;
+}
+.rbcontent { margin: 0 7px; }
+.rbroundbox { width: 50%; margin: 1em auto; }
+
+
+
+HTML
+
+<div class="rbroundbox">
+	<div class="rbtop"><div></div></div>
+		<div class="rbcontent">
+			<p>Lorem ipsum dolor sit amet, 
+			consectetuer adipiscing elit. Duis 
+			ornare ultricies libero. Donec 
+			fringilla, eros at dapibus fermentum,
+			tellus tellus auctor erat, vitae porta 
+			magna libero sed libero. Mauris sed leo. 
+			Aliquam aliquam. Maecenas vestibulum.</p>
+		</div><!-- /rbcontent -->
+	<div class="rbbot"><div></div></div>
+</div><!-- /rbroundbox -->

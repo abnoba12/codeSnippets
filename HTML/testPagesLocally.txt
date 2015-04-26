@@ -1,0 +1,7 @@
+If you are trying to test a web page locally when you have relative links then your links won't work and all of your images will not appear.
+
+The way to get around this is to use the base tag in your head tag:
+
+<base href="http://your.domain.com/">
+
+This will then make all your link resolve properly as they would on the live site. Make sure that you add this line of code straight after the opening head tag. If you add it at the bottom of the head section then your external stylesheets and external JavaScripts will not resolve properly.

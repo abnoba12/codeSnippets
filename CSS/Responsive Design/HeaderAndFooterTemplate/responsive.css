@@ -1,0 +1,72 @@
+body{font-family:"Trebuchet MS", Helvetica, sans-serif; margin: 0; padding: 0;}
+.responsive767{display: none;}
+.responsive1012{display: none;}
+
+#header{max-width: 980px; margin: auto;}
+#header .logo{margin: 20px 0 -20px 20px; float: left;}
+#header .banner{float: right; margin: 20px 20px 0 0; max-width: 800px; height: 104px;}
+
+#header #headerCallOut{max-width: 800px; float: right;}
+#header #headerCallOut .phone{float: right; background-color: #e9e9e9; padding: 10px; color: #666666; font-size: 0.8em;}
+#header #headerCallOut .socialMedia{background-color: #999999; overflow: auto; float: right; width: 160px;}
+#header #headerCallOut .socialMedia .follow{color: white; float: left; padding: 8px 12px 12px 15px; font-size: 0.8em;}
+#header #headerCallOut .socialMedia ul{margin: 0; padding: 0;}
+#header #headerCallOut .socialMedia li{list-style-type: none; float: left;}
+#header #headerCallOut .socialMedia li span{float: left; margin-top: 6px; border-style: none;}
+#header #headerCallOut .socialMedia li .facebook{width: 28px; height: 28px; background:url('images/icon-sprite.png') -44px 0 no-repeat;}
+#header #headerCallOut .socialMedia li .twitter{width: 28px; height: 28px; background:url('images/icon-sprite.png') -70px 0 no-repeat;}
+
+#header #nav{position: relative; top: 35px; clear: both;}
+#header #nav ul{margin: 0; padding: 0;}
+#header #nav ul li{float: left; list-style-type: none; line-height: 12px; padding-left: 60px;}
+#header #nav li a{color: #666666; text-transform:uppercase; text-decoration:none; font-weight: bold; font-size: 12px;}
+
+#mainWrapper{background-color: #63e4f9; clear: both;}
+#mainContent{padding: 20px; max-width: 1024px; margin: 0 auto;}
+
+#footer{background-color: #333333; overflow: auto; font-size: 0.8em;}
+#footer #footerContent{max-width: 980px; margin: auto;}
+#footer #footerContent .copywrite{color: white; float: left; margin-left: 20px;}
+#footer #footerContent .footerLinks{float: right; color: #666666; text-transform:uppercase;}
+#footer #footerContent .footerLinks li{list-style-type: none; float: left;}
+#footer #footerContent .footerLinks a{color: #666666; padding: 10px;}
+
+@media only screen and (max-width:1012px){
+	.responsive1012{display: block;}
+	#header .banner{height: auto; margin: 0;}
+	
+	#header #headerCallOut{display: none;}
+	#header .menuButton{float: right; margin-top: 54px; width: 64px; height: 70px; background:url('images/menuButton.jpg') 0 0 no-repeat;}
+	#header .menu1012{width: 64px; position: relative;}
+	#header .menu1012:hover .menuButton{background:url('images/menuButtonHover.jpg') 0 0 no-repeat;}
+	#header .menu1012:hover{width:567px;}
+	#header .menu1012:hover ul{display: block !important;}	
+	
+	#header #nav{position: static;}
+	#header #nav ul{display: none; width: auto; position: absolute; background-color: #666666; padding-top: 15px;}
+	#header #nav ul li{float: none; padding: 15px 30px; width: 507px; margin: 0;}
+	#header #nav li a{ color: white; font-weight: normal; font-size: inherit;}
+	#header .innerSocialMedia1012{border-top: 1px solid white; padding: 15px 0;}
+	#header .socialMedia1012 .follow{color: white; float: left; padding: 8px 12px 30px 0;}
+	#header .socialMedia1012 .facebook{float: left; margin-top: 5px; border-style: none; width: 28px; height: 28px; background:url('images/icon-sprite.png') -44px 0 no-repeat;}
+	#header .socialMedia1012 .twitter{float: left; margin-top: 5px; border-style: none; width: 28px; height: 28px; background:url('images/icon-sprite.png') -70px 0 no-repeat;}
+	
+}
+
+@media only screen and (max-width:767px){
+	.responsive767{display: block;}
+	
+	#header{margin: auto;}
+	#header .logo .responsiveFull{display: none;}
+	#header .logo{margin: 0 0 0 20px;}
+	#header .menuButton{float: right; margin: 0;}
+	#header .menu1012{position: static;}
+	#header .menu1012:hover{width:auto;}
+	
+	#header #nav ul{left: 0; width: 100%;}
+	#header #nav ul li{width: auto;}
+	
+	#footer #footerContent .copywrite{margin-left: 20px;}
+	#footer #footerContent .footerLinks{clear: both; float: left; margin: 0 0 20px 10px; padding: 0;}
+}
+

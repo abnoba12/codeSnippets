@@ -1,0 +1,14 @@
+--- WMIC --- 
+	--- Notes ---
+	-The /node: can be the name of the box or the IP
+	-When using quotes inside of quoets make sure you escape your internal quotes like this \"
+	-This example unzips a file on a remote computer
+	-The double greater than signs are used to redirect the command line output to a file. This is overritten every time.
+
+	--- Command ---
+	wmic /node:"pbsdev-hq01.siteworx.com" /user:bamboo /password:f1E7vL0dfZg80MBnMybu process call create "cmd.exe /c \"C:\Program Files\7-Zip\7z\" x S:\inetpub\wwwroot\PBS\build\pbsdev-hq01.siteworx.com\serialization.zip -oS:\inetpub\wwwroot\PBS\build\pbsdev-hq01.siteworx.com -aoa >> S:\inetpub\wwwroot\PBS\build\pbsdev-hq01.siteworx.com\out.txt"
+
+	--- Errors ---
+	-If you get this error: "ERROR: Description = The RPC server is unavailable." Then first try executing the wmic command on the box (It might install wmic on the box) then execute the following command on the box "netsh firewall set service remoteadmin enable"
+	
+--- SC ---

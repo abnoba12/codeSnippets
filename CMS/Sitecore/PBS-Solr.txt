@@ -1,0 +1,7 @@
+-Adding a new search catagory-
+1. In "Domain\Search\Attributes.cs" add your new catagory to the enums
+2. Make a new page type in "Domain\Pages\" I sugest duplicating one that exists.
+3. In "Domain\Search\SearchResult.cs" add you new catagory to the catagory getter.
+
+FYI:
+  The way that "Domain\Search\SearchResult.cs" is tied to your new catagory type you placed in "Domain\Pages\" is through the SearchField items such as "[SCResultField(SearchField.Thumbnail)]". In your new class you define what gets sent to the search results. The corasponding items in each file will have the "[SCSearchField(SearchField.thing)]".

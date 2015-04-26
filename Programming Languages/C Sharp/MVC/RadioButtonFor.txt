@@ -1,0 +1,29 @@
+-- View -- I populate the data for these in the view
+	@*Gender*@
+		<div class="editor-label">
+			@Html.LabelFor(model => model.Gender)
+		</div>
+		<div class="editor-field">
+			@Html.Label("Male", "Male")        
+			@Html.RadioButtonFor(model => model.Gender, "Male" )
+			@Html.Label("Female", "Female")
+			@Html.RadioButtonFor(model => model.Gender, "Female" )
+			@Html.ValidationMessageFor(model => model.Gender, "*")
+		</div>
+		
+-- Model --
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.ComponentModel.DataAnnotations;
+
+namespace StonebridgeJCP.ViewModels
+{
+    public class GetAQuoteViewModel
+    {
+        [Required(ErrorMessage = "Please enter your gender.")]
+        public string Gender { get; set; }
+    }
+}
+

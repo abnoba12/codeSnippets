@@ -1,0 +1,1 @@
+strIPAddress = Request.ServerVariables("REMOTE_HOST")

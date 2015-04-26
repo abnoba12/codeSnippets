@@ -1,0 +1,35 @@
+-- Highlight current page --
+	--- Javascript ---
+		<script language="javascript" type="text/javascript">
+			$(document).ready(function () {
+				$('.oms-report-nav a').each(function (index) {
+					if (this.href.trim() == window.location)
+						$(this).parent().addClass("active-sub");
+				});
+			});
+		</script>
+
+	--- The HTML ---
+		<div class="oms-report-nav">
+			<div class="navbar-inner" id="oms-sub-nav">
+				<div class="container">
+					<ul>
+						<li><a href="@Url.Content("~/greenroom/Promo/rewardsTrip")">Rewards Trip</a></li>
+						<li><a href="@Url.Content("~/jh-rewards.aspx")">Super Seller</a></li>
+						<li><a href="@Url.Content("~/greenroom/Promo/inspirato")">Inspirato</a></li>
+						<li><a href="@Url.Content("#")">Style Partner Bonus</a></li>
+						<li><a href="@Url.Content("~/reports/builder-bonus")">Builder Bonus Plus</a></li>                
+					</ul>
+					<div class="clearfix">
+					</div>
+				</div>
+			</div>
+		</div>
+	
+	--- CSS ---	
+		#oms-sub-nav li.active-sub a, #oms-sub-sub-nav li.active-sub a {
+			color: #333333;
+			font-family: "proxima-nova-condensed-n6","proxima-nova-condensed",sans-serif;
+			font-style: normal;
+			font-weight: 600;
+		}

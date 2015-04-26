@@ -1,0 +1,143 @@
+--- Aspx file ---
+<asp:Label runat="server" ID="overriddenItems"></asp:Label>
+
+--- Code behind ---
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace PewInternet.utility
+{
+    public partial class standardvaluecheck : System.Web.UI.Page
+    {
+        Sitecore.Data.Database database = Sitecore.Data.Database.GetDatabase("master");
+        protected void Page_Load(object sender, EventArgs e)
+        {            
+            Sitecore.Data.Items.Item[] items = database.SelectItems("fast:/sitecore/content/Home/descendant::*");
+            int numFound = 0;
+            overriddenItems.Text = "<ul>";
+
+            foreach (Sitecore.Data.Items.Item singleItem in items)
+            {
+                string overriden = matchStandardValues(singleItem);
+                if (!string.IsNullOrEmpty(overriden))
+                {
+                    overriddenItems.Text += "<li>" + singleItem.ID.ToString() + " " + singleItem.Paths.ContentPath.ToString() + " - " + overriden + "</li>\n";
+                    numFound++;
+                }
+            }
+            overriddenItems.Text += "<li>Found: " + numFound + "/" + items.Length + "</li>";
+            overriddenItems.Text += "</ul>";
+        }
+
+        //Returns null if the item matchs the standard values otherwise it returns info on what is different
+        private string matchStandardValues(Sitecore.Data.Items.Item sitecoreItem)
+        {
+            System.Collections.ArrayList itemRenderings = new System.Collections.ArrayList();
+            System.Collections.ArrayList itemTemplateRenderings = new System.Collections.ArrayList();
+
+            //list all of the layout renderings for the item
+            if (!string.IsNullOrEmpty(sitecoreItem[Sitecore.FieldIDs.LayoutField]))
+            {
+                Sitecore.Layouts.LayoutDefinition layout = Sitecore.Layouts.LayoutDefinition.Parse(sitecoreItem[Sitecore.FieldIDs.LayoutField]);
+                for (int i = 0; i < layout.Devices.Count; i++)
+                {
+                    Sitecore.Layouts.DeviceDefinition device = layout.Devices[i] as Sitecore.Layouts.DeviceDefinition;
+                    System.Collections.ArrayList renderings = device.Renderings;
+                    foreach (Sitecore.Layouts.RenderingDefinition render in renderings)
+                    {
+                        itemRenderings.Add(render.ItemID);
+                    }
+                }
+            }
+
+            //list all of the layout renderings for the item's template
+            Sitecore.Data.Items.Item itemTemplate = sitecoreItem.Template.StandardValues;
+            if (!string.IsNullOrEmpty(itemTemplate[Sitecore.FieldIDs.LayoutField]))
+            {
+                Sitecore.Layouts.LayoutDefinition templateLayout = Sitecore.Layouts.LayoutDefinition.Parse(itemTemplate[Sitecore.FieldIDs.LayoutField]);
+                for (int i = 0; i < templateLayout.Devices.Count; i++)
+                {
+                    Sitecore.Layouts.DeviceDefinition templateDevice = templateLayout.Devices[i] as Sitecore.Layouts.DeviceDefinition;
+                    System.Collections.ArrayList templateRenderings = templateDevice.Renderings;
+                    foreach (Sitecore.Layouts.RenderingDefinition templateRender in templateRenderings)
+                    {
+                        itemTemplateRenderings.Add(templateRender.ItemID);
+                    }
+                }
+            }
+            
+            string match = null;
+            if (itemRenderings.Count != itemTemplateRenderings.Count)
+            {   
+                match = "Mismatch items: ";
+                foreach(string itemRendering in itemRenderings){
+                    if(!itemTemplateRenderings.Contains(itemRendering)){
+                        Sitecore.Data.Items.Item item = database.Items.GetItem(new Sitecore.Data.ID(itemRendering));
+                        if (item != null)
+                        {
+                            match += item.Name + ", ";
+                        }
+                        else
+                        {
+                            match += itemRendering + ", ";
+                        }
+                    }
+                }
+                foreach(string itemTemplateRendering in itemTemplateRenderings){
+                    if(!itemRenderings.Contains(itemTemplateRendering)){
+                        Sitecore.Data.Items.Item item = database.Items.GetItem(new Sitecore.Data.ID(itemTemplateRendering));
+                        if (item != null)
+                        {
+                            match += item.Name + ", ";
+                        }
+                        else
+                        {
+                            match += itemTemplateRendering + ", ";
+                        }
+                    }
+                }
+            }else{
+                bool first = true;
+                foreach(string itemRendering in itemRenderings){
+                    if(!itemTemplateRenderings.Contains(itemRendering)){
+                        if(first){
+                            match = "Mismatch items: ";
+                            first = false;
+                        }
+                        Sitecore.Data.Items.Item item = database.Items.GetItem(new Sitecore.Data.ID(itemRendering));
+                        if (item != null)
+                        {
+                            match += item.Name + ", ";
+                        }
+                        else
+                        {
+                            match += itemRendering + ", ";
+                        }
+                    }
+                }
+                foreach(string itemTemplateRendering in itemTemplateRenderings){
+                    if(!itemRenderings.Contains(itemTemplateRendering)){
+                        if(first){
+                            match = "Mismatch items: ";
+                            first = false;
+                        }
+                        Sitecore.Data.Items.Item item = database.Items.GetItem(new Sitecore.Data.ID(itemTemplateRendering));
+                        if (item != null)
+                        {
+                            match += item.Name + ", ";
+                        }
+                        else
+                        {
+                            match += itemTemplateRendering + ", ";
+                        }
+                    }
+                }
+            }
+            return match;
+        }
+    }
+}

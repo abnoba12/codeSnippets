@@ -1,0 +1,15 @@
+1. Make a layout in Sitecore such as "/sitecore/layout/Sublayouts/Misc/RedirectSublayout"
+2. link to file below
+3. add the "Redirect URL" field as a "General Link" to your desired template.
+4. In the presentation details add the sublayout and fill in the "Redirect URL" field
+
+
+--- CS File ---
+protected void Page_Load(object sender, EventArgs e)
+{
+	LinkField redirect = Sitecore.Context.Item.Fields["Redirect URL"];
+
+	if (redirect != null)
+		if (!string.IsNullOrEmpty(redirect.Url))
+			Response.Redirect(redirect.Url);
+}

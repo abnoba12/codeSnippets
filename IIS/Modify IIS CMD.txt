@@ -1,0 +1,5 @@
+--Add binding to port 8081--
+%windir%\system32\inetsrv\appcmd set site /site.name: pbs /+bindings.[protocol='http',bindingInformation='*:8081:']
+
+--Remove binding to port 8081--
+%windir%\system32\inetsrv\appcmd set site /site.name: pbs /-bindings.[protocol='http',bindingInformation='*:8081:']

@@ -1,0 +1,5 @@
+--Use this for filtering your selection--
+DataSource=/sitecore/content/Home&IncludeTemplatesForDisplay=Commentary Folder,Commentary Year Folder,Commentary Month Folder,Presentation Folder,Presentation Year Folder,Commentary,Presentation,Report Year Folder,Reports Folder,Report,Static Page&IncludeTemplatesForSelection=Commentary,Presentation,Report,Static Page
+
+--You can also add queries too filter your selection--
+query:/sitecore/content/Westwood/Home//*[@@templatename='Program Page']

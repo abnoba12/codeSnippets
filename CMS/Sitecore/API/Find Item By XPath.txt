@@ -1,0 +1,39 @@
+in Sitecore go to "Sitecore" --> "All Applications" --> "Developer Center" --> "Tools" --> "XPath Builder"
+
+--- Examples ---
+
+descendant::*[@@id = "{C7D8969A-2250-4947-8138-AA7BBE45809E}"]
+descendant::*[@type='Treelist'] 
+//YYYYMMDD
+descendant::*[@__updated >= '20120206']
+
+
+Other Search directions:
+parent::
+child::
+ancestor:: (when the FastQueryDescendantsDisabled setting is set to “false”)
+descendant:: (when the FastQueryDescendantsDisabled setting is set to “false”)
+
+Other Search Criteria:
+@@id
+@@name
+@@key
+@@templateid
+@@templatename
+@@templatekey
+@@masterid
+@@parentid
+
+--- Notes ---
+-It’s also important to note that special characters in queries need to be escaped with a hash, for example, a hyphen in a query will break the parser and needs to be handled by being wrapped in #.
+
+-You can also do multiple parameters using 'and' like this /sitecore/content/Westwood/Home/#request-info#/descendant::*[@State="{4F477E23-2D62-46E3-AF4F-102AC64A98E5}" and @Content Type="{85DB130C-AFA7-4FA2-AB90-D871CFF23221}"]
+
+-You can also search for part of a field using contails like this 
+//*[contains(@Title, 'Sitecore')]
+
+-The difference between '/sitecore/content/*' and '/sitecore/content//*' is that the /* will return the items children non-recursivly, but when using //* it will return the items children and all decendents.
+
+--- In Code ---
+Sitecore.Data.Database database = Sitecore.Data.Database.GetDatabase("master"); 
+Sitecore.Data.Items.Item[] items = database.SelectItems("fast:/sitecore/content/home/#big-shapes#/*");

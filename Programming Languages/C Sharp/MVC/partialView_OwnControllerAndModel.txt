@@ -1,0 +1,215 @@
+-- ViewModel --
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Web;
+	using System.ComponentModel.DataAnnotations;
+
+	namespace StonebridgeJCP.ViewModels
+	{
+		public class ManageAccountViewModel    {
+			[Required(ErrorMessage = "Please enter your username.")]
+			[StringLength(80, ErrorMessage = "Username is longer then 80 characters.")]
+			[Display(Name = "Userame: *")]
+			public string Username { get; set; }
+
+			[Required(ErrorMessage = "Please enter your password.")]
+			[StringLength(80, ErrorMessage = "Password is longer then 80 characters.")]
+			[Display(Name = "Password: *")]
+			public string Password { get; set; }
+		}
+	}
+	
+-- Partial View --
+- Located in the Shared Folder, but can also be in its own view folder -
+
+	@model StonebridgeJCP.ViewModels.ManageAccountViewModel
+	@using (Html.BeginForm())
+	{
+		<fieldset>
+			<table cellspacing="0" cellpadding="0" border="0">
+				<tbody>
+					<tr valign="top">
+						<td width="187">
+							@Html.ValidationSummary(false, message: "Please make sure the following fields are completed:")
+						</td>
+					</tr>
+					<tr valign="top">
+						<!-- Start: Manage My Account Pod -->
+						<td width="187">
+							<div id="podMarg" class="mngAcct">
+								<center><img border="0" src="images/img_manageAcct.jpg"></center>
+								<h1>Manage My Account</h1>
+								<table cellspacing="0" cellpadding="1" border="0">						
+									<tbody><tr>
+										<td>@Html.LabelFor(model => model.Username)</td>
+										<td>@Html.TextBoxFor(model => model.Username, new { id = "txtUsername" })</td>
+									</tr>
+									<tr>
+										<td>@Html.LabelFor(model => model.Password)</td>
+										<td>@Html.PasswordFor(model => model.Password, new { id = "txtPassword" })</td>
+									</tr>
+									<tr>
+										<td align="right" colspan="2">
+											<div style="float:left;color:Black;"><a id="ctl00_ContentPlaceHolder1_ManageMyAccount1_lnkForgotPassword" href="http://testisn/forgot_password.aspx">Forgot Password?</a></div>
+										</td>
+									</tr>
+									<tr>
+										<td align="right" colspan="2">
+											<input type="submit" value="Log in">
+										</td>
+									</tr>
+
+								</tbody></table>
+								Need customer service?
+								<ul>
+									<li>Call us at <nobr>@ViewData["ServicePhone"]</nobr></li>
+									<li><a href="ContactUs.aspx">E-mail us</a> now</li>
+									<li><a onclick="return openWorksheet(this)" target="_blank" href="ManageOnline.aspx">What can I manage online?</a></li>
+								</ul>
+							</div>
+						</td>
+						<!-- End: Manage My Account Pod -->
+					</tr>
+					<tr valign="top">
+						<td height="10"><img width="187" height="10" border="0" id="ctl00_ContentPlaceHolder1_Img6" src="images/spacer_F8F2E1.gif"></td>
+					</tr>
+					<tr valign="top">
+						<!-- Start: First Time User Pod -->
+						<td bgcolor="#d9e0ee">
+							<div id="podMarg">
+								<h1>First Time Users</h1>
+								<a href="@ViewData["MemberRegURL"]">Register Now</a><br>
+								<p>It only takes a minute to register your policy/certificate. Then you can access your account anytime to update personal information, view active policies, certificates, print claim forms, and more.</p>
+							</div>
+						</td>
+						<!-- End: First Time User Pod -->
+					</tr>
+					<tr valign="top">
+						<td height="10"><img width="187" height="10" border="0" id="ctl00_ContentPlaceHolder1_Img7" src="images/spacer_F8F2E1.gif"></td>
+					</tr>					
+				</tbody>
+			</table>        
+		</fieldset>
+	}
+
+-- PartialView's Controller --
+-- Notice the POST action named "GetAQuotePostAction". This is not really a POST action for this controller because you can't RedirectToAction from within a PartialView. The reason for this is because by the time you reach the PartialView and render the header has already been rendered to the page and it is too late to preform a redirect. 
+
+Solution: Call our quasi post action "GetAQuotePostAction" from the controller that controls the real post action. So this would be the controller for the view you put the "@{Html.RenderAction("GetAQuote", "GetAQuote");}" inside of above. See the following file for example of that controller.
+
+Note: If we did make a GetAQuote POST function it would be properly called, you are just limited to not being able to RedirectToAction --
+
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Web;
+	using System.Web.Mvc;
+	using StonebridgeJCP.ViewModels;
+	using StonebridgeJCP.Models;
+	using ADMS.Web.EntityFramework;
+	using Aegon.Tools;
+
+	namespace StonebridgeJCP.Controllers
+	{
+		public class ManageAccountController : Controller
+		{
+			private Visitor _visitor = default(Visitor);
+
+			// Called before the action method is invoked.
+			protected override void OnActionExecuting(ActionExecutingContext ctx)
+			{
+				//Get the visitor data
+				_visitor = (Visitor)Session["Visitor"];
+			}
+
+			// Called after the action method is invoked.
+			protected override void OnActionExecuted(ActionExecutedContext ctx)
+			{
+				//Update the visitor with any changes have been made 
+				Session["Visitor"] = _visitor;
+				_visitor = null;
+			}
+
+			public virtual PartialViewResult ManageAccount()
+			{
+				ViewData["ServicePhone"] = _visitor.SiteSource.ServicePhoneNbr;
+				ViewData["MemberRegURL"] = HttpContext.Application["MemberSiteRegister"].ToString();
+				
+				//Allows us to recieve validation errors
+				if (Session["ErrorList"] != null)
+				{
+					List<string> ErrorList = (List<string>)Session["ErrorList"];
+					foreach (var error in ErrorList)
+					{
+						ModelState.AddModelError(String.Empty, error);
+					}
+					Session["ErrorList"] = null;
+				}
+
+				return PartialView();
+			}
+
+			//Post Actions from a partialView must be called from the parent controller due to scope issues
+			public ActionResult ManageAccountPostAction(ManageAccountViewModel ManAccVM, HttpContextBase context)
+			{
+				//Seeing we need to take in the session we need to set the visitor again.
+				_visitor = (Visitor)context.Session["Visitor"];
+				ViewData["ServicePhone"] = _visitor.SiteSource.ServicePhoneNbr;
+				ViewData["MemberRegURL"] = context.Application["MemberSiteRegister"].ToString();
+				//Build errors
+				List<string> ErrorList = new List<string>();
+
+				//Check the login
+				ADMS_Web_Entities ADMS_WEB = new ADMS_Web_Entities();
+				var loginInfo = ADMS_WEB.Member_Profile_CheckMemberLoginEF(ManAccVM.Username, context.Application["MemberSiteName"].ToString()).ToList();
+				if (loginInfo.Count == 0)
+				{
+					ErrorList.Add("Invalid username");
+				}
+				else
+				{
+					foreach (var member in loginInfo)
+					{
+						if (Crypto.EncryptString(ManAccVM.Password, context.Application["MemberSiteCrypto"].ToString()) == member.USER_PASSWORD)
+						{   
+							return Redirect(String.Format(context.Application["MemberSiteAutoLogin"].ToString() + "?m={0}", member.MEMBER_ID));
+						}else{
+							ErrorList.Add("Invalid password");
+						}
+					}
+				}
+
+				//Save the error list so we can throw client side validation errors
+				context.Session["ErrorList"] = ErrorList;
+				return null;
+			}
+		}
+	}
+
+---------------------------------------------------------------------------------------
+---- From here down is what needs to be added to add the partial view to any page. ----
+---------------------------------------------------------------------------------------	
+
+-- PartialView's Parent Controller --
+-- This gets passed in a different model then all the other actions on the page. This is expected. 
+You need to change the name of "Index" to match the name of the action of what you added the partial 
+view to.--
+
+	//Manage Account Post Action
+	[HttpPost]
+	public ActionResult Index(ManageAccountViewModel ManAccVM)
+	{
+		//Test and see if we are going to redirect the user to the member page
+		ManageAccountController ManAccCon = new ManageAccountController();
+		ActionResult redirect = ManAccCon.ManageAccountPostAction(ManAccVM, HttpContext);
+		if (redirect != null)
+			return redirect;
+		return View();
+	}
+	
+-- Adding the PartialView into a parent view --
+	<div class="right">
+		@*Adding the Account login to the page*@
+		@{Html.RenderAction("ManageAccount", "ManageAccount");}
+	</div>

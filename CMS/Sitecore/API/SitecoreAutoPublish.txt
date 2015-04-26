@@ -1,0 +1,124 @@
+--- Warning ---
+- You can't schedule an unpublish action until after a item has been published.
+- This has super power, you can setup the whole site to republish itself once every 10 minutes is you want.
+- The Sitecore scheduling agent only runs once every 10 minutes by default, so you can only get as accurate as 10 minutes. <agent type="Sitecore.Tasks.DatabaseAgent" method="Run" interval="00:10:00">
+- The setup of scheduled tasks are very techy and could be very easy to mess up.
+
+--- Sitecore Side ---
+- See http://sdn.sitecore.net/upload/sitecore6/content_cookbook_a4.pdf Pages: 33 to 36 on how to setup the task scheduler in Sitecore
+- The PDF mentioned above is also kept in this repo at http://www.weigandfamily.com/svn/Code-Snippets/trunk/Code Snipits/CMS/Sitecore/API/Content Cookbook Ver 6_0-6_2.pdf
+
+--- Notes ---
+- http://sitecorebasics.wordpress.com/2011/05/17/basics-of-sitecore-scheduled-publishing/
+
+- By Default scheduled publishing is disabled and has following configuration in Web.Config file
+	<!-- Agent to publish database periodically -->
+	<agent type="Sitecore.Tasks.PublishAgent" method="Run" interval="00:00:00">
+		<param desc="source database">master</param>
+		<param desc="target database">production</param>
+		<param desc="mode (full or incremental)">incremental</param>
+		<param desc="languages">en, da</param>
+	</agent>
+  
+- If interval’s value is 00:00:00 then it means that scheduler is disabled.
+
+- If you have two publishing targets for example “web” and “dr-web“
+	<!-- Agent to publishWeb database periodically -->
+	<agent type="Sitecore.Tasks.PublishAgent" method="Run" interval="00:00:30">
+		 <param desc="source database">master</param>
+		 <param desc="target database">web</param>
+		 <param desc="mode (full or incremental)">incremental</param>
+		 <param desc="languages">en, da</param>
+	</agent>
+	<!-- Agent to publish reading-web-farm database periodically -->
+	<agent type="Sitecore.Tasks.PublishAgent" method="Run" interval="00:00:30">
+		  <param desc="source database">master</param>
+		  <param desc="target database">dr-web</param>
+		  <param desc="mode (full or incremental)">incremental</param>
+		  <param desc="languages">en, da</param>
+	</agent>
+
+--- How scheduled publishing works ---
+- During the work of the “Sitecore.Tasks.PublishAgent” all files that have been modified and have proper restrictions will be published from the source database to the target database.
+ 
+- Publish restrictions are as below: 
+	1. Item is not in final workflow state.
+	2. You selected “Never publish” at the “Publishing” section of the item.	 
+		NOTE: If you can’t see Publishing Section then enable Standard Fields from “VIEW” Tab.	 
+	3. You set publish restrictions at the “Restrictions” chunk in ribbon [Publish|Change Button in ribbon].	 
+		NOTE : The same functionality is provided by the fields at the “Publishing” and “Lifetime” sections of the item.	
+	
+--- Code ---
+using System;
+using Sitecore.Data.Items;
+using Sitecore.Tasks;
+using System.Diagnostics;
+
+namespace IDirect.Utility
+{
+    public class SchedulePublish
+    {
+        public void Task(Item[] itemArray, CommandItem commandItem, ScheduleItem scheduledItem)
+        {
+            string PublishFrom = "";
+            string PublishTo = "";
+
+            // Write the start of the auto publish to the log file
+            Sitecore.Diagnostics.Log.Info("Auto Publish started at:" + DateTime.Now + " attempting to publish tree starting at: " + itemArray[0].Paths.Path.ToString(), this);
+                            
+            foreach (Item sitecoreItem in itemArray)
+            {
+                PublishFrom = sitecoreItem.Publishing.ValidFrom.ToString();
+                PublishTo = sitecoreItem.Publishing.ValidTo.ToString();
+
+                // If the item does not have and publishing restriction dates set
+                if ((PublishFrom != "1/1/0001 12:00:00 AM") || (PublishTo != "12/31/9999 11:59:59 PM"))
+                {                                    
+                    try
+                    {
+                        // Create staging publishing options
+                        Sitecore.Publishing.PublishOptions StagPublishOptions = new Sitecore.Publishing.PublishOptions(sitecoreItem.Database, Sitecore.Data.Database.GetDatabase("web"), Sitecore.Publishing.PublishMode.SingleItem, sitecoreItem.Language, System.DateTime.Now);                        
+                        // Create production publishing options
+                        Sitecore.Publishing.PublishOptions ProdPublishOptions = new Sitecore.Publishing.PublishOptions(sitecoreItem.Database, Sitecore.Data.Database.GetDatabase("production"), Sitecore.Publishing.PublishMode.SingleItem, sitecoreItem.Language, System.DateTime.Now);
+
+                        // Create a staging publisher with the publishoptions
+                        Sitecore.Publishing.Publisher StagPublisher = new Sitecore.Publishing.Publisher(StagPublishOptions);
+                        // Create a production publisher with the publishoptions
+                        Sitecore.Publishing.Publisher ProdPublisher = new Sitecore.Publishing.Publisher(ProdPublishOptions);
+
+                        // Choose where to staging publish from
+                        StagPublisher.Options.RootItem = sitecoreItem;
+                        // Choose where to production publish from
+                        ProdPublisher.Options.RootItem = sitecoreItem;
+
+                        // Do the staging publish
+                        StagPublisher.Publish();
+                        // Do the production publish
+                        ProdPublisher.Publish();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Write Failure Sitecore log
+                        Sitecore.Diagnostics.Log.Info("Auto Publish of: " + sitecoreItem.Paths.Path.ToString() + " Failed at: " + DateTime.Now, this);
+
+                        string LogSource = "Task - Auto Pubisher";
+                        string Log = "Application";
+
+                        // Create log if it does not exist
+                        if (!EventLog.SourceExists(LogSource)) 
+                        { 
+                            EventLog.CreateEventSource(LogSource, Log); 
+                        }
+
+                        // Write the error and stacktrace to the servers Application log
+                        EventLog.WriteEntry("Application", "Task - Auto Pubisher threw an exception. \n\n" + ex.Message + "\n\n" + ex.StackTrace, EventLogEntryType.Error);
+                    }
+                } // End if
+            } // End foreach
+
+            // Write the end of the auto publish to the log file
+            Sitecore.Diagnostics.Log.Info("Auto Publish ended at:" + DateTime.Now + " Successful publish of tree starting at: " + itemArray[0].Paths.Path.ToString(), this);
+
+        } // End Task
+    } // End class SchedulePublish
+} // End namespace

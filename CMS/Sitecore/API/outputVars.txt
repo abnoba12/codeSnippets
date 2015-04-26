@@ -1,0 +1,6 @@
+--- HTML style ---
+	--- aspx file ---	
+	<h1 runat="server" id="WGTitle">Winners Gallery</h1>
+	
+	--- CS file ---	
+	WGTitle.InnerText = Gallery.Title;

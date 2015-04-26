@@ -1,0 +1,76 @@
+-- If we have a list of relationships then check them to make sure the relationships don't make a circular relationship --
+
+	public $validate = array(
+		'first_location' => array(
+			'preventCircularDependency' => array( 
+		        'rule' => array('preventCircularDependency'), 
+		        'message' => 'You can\'t add that location, because it will make a circular dependency.' 
+		    ),	
+		),
+		'second_location' => array(
+			'preventCircularDependency' => array( 
+		        'rule' => array('preventCircularDependency'), 
+		        'message' => 'You can\'t add that location, because it will make a circular dependency.' 
+		    ),	
+		),
+	);
+	
+	/**
+	********* Custom Validation *********
+	*/	
+	
+	/**
+	* Used to determine if any of these relations have a circular dependency
+	* 
+	*/
+		public function preventCircularDependency(){
+			if(isset($this->data['LinkedLocation']['first_location']) && isset($this->data['LinkedLocation']['second_location'])){		
+				$options = array('conditions' => array("LinkedLocation.user_id = ".AuthComponent::user('id')));
+				$linkedLocationList = Model::find('all', $options);
+				
+				//Add the new location to this list so we can check it.
+				array_push($linkedLocationList, array("LinkedLocation" => 
+						array("first_location" => $this->data['LinkedLocation']['first_location'], 
+						"second_location" => $this->data['LinkedLocation']['second_location'])));	
+				
+				//Build two arrays, one for the first and one for the SECOND
+				$firstLocationArray = null;
+				$secondLocationArray = null;
+				foreach($linkedLocationList as $linkedLocation){
+					$first = $linkedLocation['LinkedLocation']['first_location'];
+					$second = $linkedLocation['LinkedLocation']['second_location'];
+					
+					if(isset($firstLocationArray)){
+						array_push($firstLocationArray, $first);
+					}else{
+						$firstLocationArray = array($first);
+					}
+					
+					if(isset($secondLocationArray)){
+						array_push($secondLocationArray, $second);
+					}else{
+						$secondLocationArray = array($second);
+					}
+				}
+					
+				//now we check for cicular Dependency
+				if(count($firstLocationArray) != count($secondLocationArray)){
+					//we have a problem
+					return FALSE;
+				}else{
+					foreach($firstLocationArray as $x){		
+						foreach($firstLocationArray as $key => $value){
+							if(!in_array($firstLocationArray[$key], $secondLocationArray) || !in_array($secondLocationArray[$key], $firstLocationArray)){
+								unset($firstLocationArray[$key]);
+								unset($secondLocationArray[$key]);
+							}
+						}
+					}
+				}
+				
+				if(count($firstLocationArray) > 0){
+					return FALSE;
+				}
+			}
+			return TRUE;
+		}

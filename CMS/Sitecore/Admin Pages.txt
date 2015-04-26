@@ -1,0 +1,27 @@
+Sitecore comes shipped with a plethora of admin pages that provide significant features to developers and administrators. Many of these pages aren’t exactly documented well or at all. I intend to identify and explain the admin pages that I know of and how they can be used to your advantage.
+Cache
+
+The /sitecore/admin/cache.aspx page displays details about the caching settings configured. This includes database prefetch, data cache, item cache, HTML cache, etc. This is useful to see the current in-use cache levels and the defined max value levels. If you’re preforming a load test on the site, its a good idea to check this page out to see what your usage levels are compared to your provided memory levels. Use of this page is vital when fine tuning and tweaking caching settings on your site. By default, this page does NOT come password protected. It is recommended that you protect this page as it displays sensitive site information that should not be public and it allows any users to instantly clear the Sitecore caches. You can implement password protection via IIS.
+Database Browser
+
+The /sitecore/admin/dbbrowser.aspx page displays a view of the Sitecore database. This is similar to the content tree itself, however it appears to be a less intensive interface that only loads sub-items when parent items are selected.
+Serialization
+
+The /sitecore/admin/serialization.aspx page provides an interface to serialize database content into XML. This is a convenient tool if you want to backup database content and place it in version control or compare different versions. When creating Sitecore packages, you actually serialize a good amount of content in the background. This tool is a direct interface to serialize the database content to flat files.
+Show Config
+
+The /sitecore/admin/showconfig.aspx page shows the final rendered version of the web.config’s Sitecore section, after all external configs have been loaded. A nice feature baked right into Sitecore is the ability to use config includes. This allows developers to add custom .config files to the /App_Config/Include/ folder, and those files are merged in with the web.config. The Show Config tools displays the final rendered version of all included configs. This is useful for debugging settings if you’re not sure if your config files are being read. This tool is password-protected in some of the newer released of Sitecore.
+
+To read more about config includes and show config, John West has a good blog post. There’s also a module that can be installed as an app into Sitecore to show detailed config info. This is called the Detailed Config Report.
+Size Status
+
+The /sitecore/admin/sizestatus.aspx page displays various stats for database sizes. I’m not aware of any immediate use of this page as the details of it are pretty ambiguous and lacking.
+Stats
+
+The /sitecore/admin/stats.aspx page is similar to the cache page as it shows what presentational components have been loaded for each site and how long they take to load. It also identifies how many times these components have been loaded from the cache. This page is a vital tool for fine tuning and tweaking caching settings.
+Unlock Admin
+
+The /sitecore/admin/unlock_admin.aspx page is useful to unlock a locked admin login. When a certain number of login attempts are made without success, a user may be locked out. If this happens with the admin user, using this page can allow you to unlock the admin so you can re-gain access to attempt to log in. This feature requires you to modify a line of code to ensure security of the system.
+Update Installation Wizard
+
+The /sitecore/admin/UpdateInstallationWizard.aspx page allows you to update Sitecore using an update package. These packages are distributed from Sitecore as version updates so you can update versions without having to setup a brand new instance for a newer version.

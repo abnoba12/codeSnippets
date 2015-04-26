@@ -1,0 +1,16 @@
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\bin\Debug\Sitecore_Log.exe
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\bin\Debug\Sitecore_Log.pdb
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.Form1.resources
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.Properties.Resources.resources
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.csproj.GenerateResource.Cache
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.exe
+C:\Users\Jacob Weigand\Documents\Visual Studio 2008\Projects\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.pdb
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.exe
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.pdb
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\bin\Debug\Sitecore_Log.exe
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\bin\Debug\Sitecore_Log.pdb
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.Form1.resources
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.Properties.Resources.resources
+C:\Users\Public\Files\Code\Sitecore_Log\Sitecore_Log\obj\Debug\Sitecore_Log.csproj.GenerateResource.Cache

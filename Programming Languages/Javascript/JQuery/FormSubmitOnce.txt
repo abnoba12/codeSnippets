@@ -1,0 +1,9 @@
+//Prevent the enroll button from submiting the form every time it is clicked
+$("#btnEnroll").on("click", function (e) {
+	e.preventDefault();
+});
+
+//Make sure the the enrollment is only submited once.
+$("#btnEnroll").one("click", function (e) {
+	$("form").submit();
+});

@@ -1,0 +1,13 @@
+//The image style is created via /admin/config/media/image-styles
+if($result['node']->field_picture){
+	$drupalImage = $result['node']->field_picture['und'][0];
+	$image = array(
+	  'style_name' => 'thumbnail',
+	  'path' => $drupalImage['filename'],
+	  'width' => '',
+	  'height' => '',
+	  'alt' => $drupalImage['alt'],
+	  'title' => $drupalImage['title'],
+	  );
+	print theme('image_style',$image);
+}

@@ -1,0 +1,8 @@
+protected void Page_Load(object sender, EventArgs e)
+{
+	if(!Sitecore.Context.IsLoggedIn)
+	{
+		Session["SC_LOGIN_REDIRECT"] = Sitecore.Context.RawUrl;
+		Response.Redirect("/sitecore/login");
+	}
+}

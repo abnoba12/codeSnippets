@@ -1,0 +1,28 @@
+--- CSS ---
+	.styled-select {
+	   width: 220px;
+	   height: 30px;
+	   overflow: hidden;
+	   background: url("/images/icon-caret-gray.png") no-repeat scroll 200px 11px #FFFFFF;
+	   border: 1px solid #CCCCCC;
+	   margin-bottom: 10px;
+	   border-radius: 4px;
+	}
+
+	.styled-select select {
+	   background: url("/images/line.png") no-repeat scroll 190px 0 transparent;
+	   width: 248px;
+	   padding: 5px;
+	   line-height: 1;
+	   border: 0;
+	   border-radius: 0;
+	   height: 34px;
+	   -webkit-appearance: none;
+	}
+	
+--- HTML ---
+	<div class="styled-select">
+		<asp:DropDownList runat="server" ID="ddlContactInformation_PhoneType" title="Please select phone type"  ClientIDMode="Static" DataTextField="Phone_Type_Name" DataSourceID="dsPhoneType" DataValueField="Phone_Type_Id" AppendDataBoundItems="true">
+			<asp:ListItem Value="">Select</asp:ListItem>
+		</asp:DropDownList>
+	</div>

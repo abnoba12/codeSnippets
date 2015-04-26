@@ -1,0 +1,13 @@
+--- Prevent the background from scrolling when the modal is open ---
+	<script>
+		body.modal-open
+		{
+			overflow: hidden;   
+		}
+	</script>
+	
+--- Make sure the modal isn't off the screen ---
+	@media (min-height:320px) { /* smartphones, iPhone, portrait 480x320 phones */ .modal .modal-body{ max-height: 90px;} .modal .modal-footer{ max-height: 40px;}}
+	@media (min-height:500px) { /* portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide. */ .modal .modal-body{ max-height: 200px;}}
+	@media (min-height:600px) { /* portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones */ .modal .modal-body{ max-height: 300px;}}
+	@media (min-height:725px) { /* tablet, landscape iPad, lo-res laptops ands desktops */ .modal .modal-body{ max-height: 450px;}}

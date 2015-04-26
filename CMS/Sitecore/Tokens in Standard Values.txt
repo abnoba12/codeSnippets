@@ -1,0 +1,11 @@
+One thing you need to be aware of is that when you enter a token as a standard value, Sitecore will not replace values on already created items. Instead the value “$name” will be used in all the items, which hasn’t changed value since creation.
+
+By default there are the following tokens available in Sitecore:
+
+    $name: Is replaced with the name of the created item
+    $parentname: Is replaced with the name of the parent to the created item
+    $date: Is replaced with the current date
+    $time: Is replaced with the current time
+    $now: Is replaced with current date and time
+    $id: Is replaced with the id of the created item
+    $parentid: Is replaced with the id of the parent to the created item.
