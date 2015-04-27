@@ -1,6 +1,6 @@
 ﻿//Jacob Weigand
 //04-13-2015
-//Version: 1.1
+//Version: 1.2
 //Documentation: http://jhwiki.jhilburn.com/~jhilburn/index.php?title=Disallow_JQuery_Plugin
 //
 //TODO: Add a hoverover to all the disallowed targets telling the user why the target is disabled. 
@@ -171,7 +171,10 @@
 
         if (typeof currentDisallows !== typeof undefined && currentDisallows !== false) {
             currentDisallowsArray = currentDisallows.split(',');
-            currentDisallowsArray.push(sourceName);
+            //Add if the array doesn't already contain the disallow
+            if ($.inArray(sourceName, currentDisallowsArray) == -1) {
+                currentDisallowsArray.push(sourceName);
+            }
         } else {
             currentDisallowsArray.push(sourceName);
         }
