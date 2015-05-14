@@ -1,0 +1,18 @@
+	//We want to do a left join on the tree using data from partnerTitles.
+	
+	//Get the two datasets
+	List<Genealogy> tree = Genealogy.GetTree(stylistId);
+	List<Partner_Title> partnerTitles = Partner_Title.Get();
+	
+	tree = (from t in tree
+			//Define the attribute in each object we are keying off of and combine the two lists
+			join pt in partnerTitles on t.Partner_Id equals pt.Partner_Id into combinedTree
+			//Define what fields in the tree we want to populate from partnerTitles.
+			//Also define what we want to do if we didn't have matching entries between the tree and partnerTitles
+			from subTree in combinedTree.DefaultIfEmpty()
+			select ((Func<Genealogy>)(() =>
+			{
+				t.Career_Title = ((subTree == null) ? "SAS" : subTree.Career_Title);
+				t.Last_Paid_As = ((subTree == null) ? "SAS" : subTree.Last_Paid_As);
+				return t;
+			}))()).ToList();
