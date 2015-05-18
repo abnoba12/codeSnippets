@@ -1,18 +1,36 @@
-	//We want to do a left join on the tree using data from partnerTitles.
-	
-	//Get the two datasets
+	//Get all the data
 	List<Genealogy> tree = Genealogy.GetTree(stylistId);
 	List<Partner_Title> partnerTitles = Partner_Title.Get();
-	
+	List<PartnerVolume> teamVolume = PartnerVolume.Get(stylistId);
+
+	//Do a left join and merge all the data into the genealogy tree
+	PartnerFavoriteModel pfm = new PartnerFavoriteModel();
+	List<OMS40.Models.PartnerFavoriteModel.PartnerFavorite> favorites = pfm.GetPartnerFavorites("Partner").ToList();
 	tree = (from t in tree
-			//Define the attribute in each object we are keying off of and combine the two lists
-			join pt in partnerTitles on t.Partner_Id equals pt.Partner_Id into combinedTree
-			//Define what fields in the tree we want to populate from partnerTitles.
-			//Also define what we want to do if we didn't have matching entries between the tree and partnerTitles
-			from subTree in combinedTree.DefaultIfEmpty()
+			//Left join favorites
+			join f in favorites on t.Partner_Id equals f.Favorite_Person_ID into combinedTree1
+			from favTree in combinedTree1.DefaultIfEmpty()
+
+			//Left join Partner Titles
+			join pt in partnerTitles on t.Partner_Id equals pt.Partner_Id into combinedTree2
+			from titleTree in combinedTree2.DefaultIfEmpty()
+
+			//Left join Team data
+			join tmVol in teamVolume on t.Partner_Id.ToString() equals tmVol.Partner_Id into combinedTree3
+			from teamDataTree in combinedTree3.DefaultIfEmpty()
+
+			//Map the fields in the tree object to the passed in data.
 			select ((Func<Genealogy>)(() =>
 			{
-				t.Career_Title = ((subTree == null) ? "SAS" : subTree.Career_Title);
-				t.Last_Paid_As = ((subTree == null) ? "SAS" : subTree.Last_Paid_As);
+				//for each property we need to define what to do when the mapped field is null, becuase this is a left join.
+				t.isSpark = ((favTree == null) ? false : true);
+
+				t.Career_Title = ((titleTree == null) ? "SAS" : titleTree.Career_Title);
+				t.Last_Paid_As = ((titleTree == null) ? "SAS" : titleTree.Last_Paid_As);
+
+				t.partnerVolume = (teamDataTree == null) ? new PartnerVolume() : teamDataTree;
+				t.NumberOfLegs = (teamDataTree == null) ? 0 : teamDataTree.Legs.Count;
+
+				//Return the object so any field not explicitly updated above will remain the same.
 				return t;
 			}))()).ToList();
