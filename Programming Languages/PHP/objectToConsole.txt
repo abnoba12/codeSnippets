@@ -1,0 +1,1 @@
+echo "<script>console.log(".json_encode($personalization_options, JSON_PRETTY_PRINT).")</script>";
