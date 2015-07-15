@@ -5,13 +5,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
 using System.Collections.Concurrent;
+using System.Web.Hosting;
 
-/*Example of use:
-XDocument doc = CachedDataManager.GetCachedItem("homepage_carousel_rss", () =>
-{
-	return XDocument.Load("http://cms.jhilburn.com/?page_id=107&tag=feature");
-});
-*/
 public static class CachedDataManager
 {
 	private static readonly ConcurrentDictionary<string, object> cacheItemLocks = new ConcurrentDictionary<string, object>(StringComparer.Ordinal);
@@ -20,7 +15,7 @@ public static class CachedDataManager
 		return Math.Max(timeout, 60);
 	});
 
-	public static T GetContextItem<T>(string contextKey, Func<T> getValue = null)
+    public static T GetContextItem<T>(string contextKey, Func<T> getValue = null)
 	{
 		var tup = HttpContext.Current.Items[contextKey] as Tuple<T>;
 		if (tup != null)
@@ -35,7 +30,7 @@ public static class CachedDataManager
 		return tup.Item1;
 	}
 
-	public static T GetCachedItem<T>(string cacheKey, Func<T> getValue = null, params string[] dependsOnKeys)
+	public static T GetCachedItem<T>(string cacheKey, Func<T> getValue = null, TimeSpan? timeoutLength = null,  params string[] dependsOnKeys)
 	{
 		var tup = HttpRuntime.Cache[cacheKey] as Tuple<T>;
 		if (tup != null)
@@ -51,7 +46,8 @@ public static class CachedDataManager
 			{
 				tup = Tuple.Create(getValue());
 				var dependency = dependsOnKeys.Length > 0 ? new CacheDependency(null, dependsOnKeys) : null;
-				var timeout = dependency == null ? DateTime.Now.AddSeconds(cacheTimeout.Value + (new Random()).Next(-30, 31)) : Cache.NoAbsoluteExpiration;
+                var timeout = timeoutLength == null ? DateTime.Now.AddSeconds(cacheTimeout.Value + (new Random()).Next(-30, 31)) : DateTime.Now.AddMilliseconds(timeoutLength.Value.TotalMilliseconds);
+				timeout = dependency == null ? timeout : Cache.NoAbsoluteExpiration;
 				HttpRuntime.Cache.Insert(cacheKey, tup, dependency, timeout, Cache.NoSlidingExpiration, CacheItemPriority.NotRemovable, null);
 			}
 		}
@@ -72,4 +68,23 @@ public static class CachedDataManager
 			}
 		});
 	}
+
+    public static void RemoveCachedItem(string cacheKey)
+    {
+        if (HttpRuntime.Cache[cacheKey] != null)
+            HttpRuntime.Cache.Remove(cacheKey);
+    }
+
+    public static string HrefVersioned(string path)
+    {
+        var VirtualPath = HttpRuntime.AppDomainAppVirtualPath;
+        if (!VirtualPathUtility.IsAppRelative(path))
+            path = VirtualPathUtility.Combine(VirtualPath, path);
+
+        if (HttpRuntime.Cache[path] == null)
+            HttpRuntime.Cache.Insert(path, HostingEnvironment.VirtualPathProvider.GetFileHash(path, new string[] { path }), HostingEnvironment.VirtualPathProvider.GetCacheDependency(path, new string[] { path }, DateTime.Now.ToUniversalTime()));
+
+        return string.Concat(VirtualPathUtility.ToAbsolute(path), "?v", HttpRuntime.Cache[path]);
+    }
+
 }
