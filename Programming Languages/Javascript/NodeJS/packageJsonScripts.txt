@@ -1,0 +1,12 @@
+"scripts": {
+    "build": "npm run clean && tsc -p . && npm run lint",
+    "build:prod": "tsc -p tsconfig.production.json",
+    "build:watch": "tsc && concurrently \"npm run tsc:w\" ",
+    "start": "node ./dist/index.js",
+    "clean": "rimraf dist",
+    "clean:all": "rimraf ./dist && rimraf ./coverage && rimraf ./node_modules",
+    "lint": "tslint -c ./tslint.json ./src/**/*.ts --force",
+    "test": "set NODE_ENV=test && mocha \"./dist/tests/**/*.test.js\"",
+    "test:coverage": "set NODE_ENV=test && istanbul cover ./node_modules/mocha/bin/_mocha ./dist/tests/**/*.test.js --include-all-sources -- -R spec",
+    "test:check-coverage": "npm run test:coverage && istanbul check-coverage"
+  }
