@@ -1,4 +1,4 @@
-	- Extension methods used to build selects lists using the @HTML. helper in razor views-
+	//- Extension methods used to build selects lists using the @HTML. helper in razor views-
 	
 	/// <summary>
 	/// Builds am HTML select list - By J.Weigand
