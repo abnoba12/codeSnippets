@@ -1,0 +1,54 @@
+﻿@model CallCenterApp.Web.ViewModels.Home.SalesViewModel
+<div class="row">
+    <div class="col-xs-3 height-container">
+        <div class="row h-3 box">
+            <div class="drop-shadow">
+                <div class="col-xs-12">
+                </div>
+            </div>
+        </div>
+        <div class="row h-2 box">
+            <div class="drop-shadow">
+                <div class="col-xs-12">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-6 height-container">
+        <div class="row h-5 box">
+            <div class="drop-shadow">
+                <div class="col-xs-12 h-5">
+                    @{
+                        Html.RenderPartial("_SalesProcess", Model.Tabs);
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-3 height-container">
+        <div class="row h-1 box">
+            <div class="drop-shadow">
+                <div class="col-xs-12">
+                </div>
+            </div>
+        </div>
+        <div class="row h-2 box">
+            <div class="drop-shadow">
+                <div class="col-xs-12">
+                </div>
+            </div>
+        </div>
+        <div class="row h-2 box">
+            <div class="drop-shadow">
+                <div class="col-xs-12">
+                    @Html.Partial("~/Views/LinksCheatsheet/_Links.cshtml")
+                    @Html.Partial("~/Views/LinksCheatsheet/_Links.cshtml")
+                    @Html.Partial("~/Views/LinksCheatsheet/_Links.cshtml")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*@section Scripts{
+    <script type="text/javascript" src="~/Scripts/Pages/LinksCheatsheet/_links.js"></script>
+}*@
