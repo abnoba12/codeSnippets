@@ -1,0 +1,14 @@
+﻿<div id="GenericYesNoModal">
+    @(Html.Kendo().Dialog()
+            .Name("GenericYesNo")
+            .Width(600)
+            .Modal(true)
+            .Visible(false)
+            .Events(events => events.Close("VmStore.GenericYesNoModalVm.Close"))
+            .Actions(actions =>
+            {
+                actions.Add().Text("Yes").Action("VmStore.GenericYesNoModalVm.Yes");
+                actions.Add().Text("No").Action("VmStore.GenericYesNoModalVm.No");
+            })
+    )
+</div>
