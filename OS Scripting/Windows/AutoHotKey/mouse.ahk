@@ -11,7 +11,7 @@ loop 480
   Random, x, 0, %MonitorRight%
   Random, y, 0, %MonitorBottom%
   MouseMove x, y
-  Sleep, 60000  ; 60 seconds
+  Sleep, 120000  ; 2 minutes
 }
 Return
 
