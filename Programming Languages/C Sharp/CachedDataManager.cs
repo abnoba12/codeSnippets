@@ -15,7 +15,9 @@ public static class CachedDataManager
     private static readonly ConcurrentDictionary<string, object> cacheItemLocks = new ConcurrentDictionary<string, object>(StringComparer.Ordinal);
     
     /// <summary>
+    /// Cache time in seconds
     /// Default and shortest ttl is 1 minute if one is not set in the webconfg
+    /// <add key = "cacheTimeout"  value="43200"/><!--Server cache time 12 hours -->
     /// </summary>
     private static readonly Lazy<int> cacheTimeout = new Lazy<int>(() =>
     {
@@ -93,6 +95,14 @@ public static class CachedDataManager
         });
     }
 
+    public static void ClearCache()
+    {
+        foreach (System.Collections.DictionaryEntry entry in HttpRuntime.Cache)
+        {
+            HttpRuntime.Cache.Remove((string)entry.Key);
+        }
+    }
+
     public static void RemoveCachedItem(string cacheKey)
     {
         if (HttpRuntime.Cache[cacheKey] != null)
@@ -111,10 +121,4 @@ public static class CachedDataManager
         return string.Concat(VirtualPathUtility.ToAbsolute(path), "?v", HttpRuntime.Cache[path]);
     }
 
-}
-
-public class test {
-    string test = CachedDataManager.GetCachedItem<String>("testCache", () => {
-        return String.Format("this is a {0} string", "test");
-    }, new TimeSpan(1, 0, 0));
 }
