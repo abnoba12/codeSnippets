@@ -7,6 +7,21 @@
 } 
 
 /**
+ * @description Wraps the WaitForLoaded call in a promise, so we can use await for dom elements to load
+ * @param {any} selector The selector string to be searched for by JQuery.
+ * @param {any} ignoreVisible If true then don't wait for the element to also be visible before calling the callback
+ */
+function DomLoad(selector, ignoreVisible) {
+    return new Promise(function (resolve, reject) {
+        try {
+            WaitForLoaded(selector, resolve, reject, ignoreVisible);
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+/**
  * @description Keep checking to see if an element is loaded into the dom. if it is loaded into the down, the dom is ready, and the element is visible then call it's callback function. If it is not loaded then check again in 100ms. Times out if the element doesn't exist after 30 seconds.
  * @param {string} selector The selector string to be searched for by JQuery.
  * @param {function} callback Callback function to be called once the item is loaded into the dom
@@ -471,6 +486,27 @@ function VmStringToVm(vmString) {
     }
     return vm;
 }
+
+//function VmFromJSON(data, vm) {
+//    VmFromJS(JSON.parse(data), vm);
+//}
+
+//function VmFromJS(data, vm) {
+//    //Don't convert these things into observerables
+//    var mapping = { copy: ['Name'] }; // Why not work?
+//    var result = ko.mapping.fromJS(data, mapping);
+//    CopyVm(result, vm);
+//}
+
+var kendoEventAppointObj = {
+    event: {
+        Title: undefined,
+        StoreId: undefined,
+        start: undefined,
+        end: undefined,
+        Slots: 1,
+    }
+};
 
 /**
  * When passed a function with a Promise as it's result this will keep re-executeing until the resulting promise resolves successfully or until the {numOfAttempts} is reached.
