@@ -7,6 +7,21 @@
 } 
 
 /**
+ * @description Wraps the WaitForLoaded call in a promise, so we can use await for dom elements to load
+ * @param {any} selector The selector string to be searched for by JQuery.
+ * @param {any} ignoreVisible If true then don't wait for the element to also be visible before calling the callback
+ */
+function DomLoad(selector, ignoreVisible) {
+    return new Promise(function (resolve, reject) {
+        try {
+            WaitForLoaded(selector, resolve, reject, ignoreVisible);
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+/**
  * @description Keep checking to see if an element is loaded into the dom. if it is loaded into the down, the dom is ready, and the element is visible then call it's callback function. If it is not loaded then check again in 100ms. Times out if the element doesn't exist after 30 seconds.
  * @param {string} selector The selector string to be searched for by JQuery.
  * @param {function} callback Callback function to be called once the item is loaded into the dom
@@ -15,15 +30,16 @@
  * @returns {JQuery} Returns the result of the selector as a JQuery object.
  */
 function WaitForLoaded(selector, callback, failed, ignoreVisible, attempts = 0) {
-    if (jQuery(selector).length && (ignoreVisible || jQuery(selector).is(":visible"))) {
+    var ele = jQuery(selector);
+    if (ele.length && (ignoreVisible || ele.is(':visible'))) {
         $(function () {
-            return callback(jQuery(selector));
+            return callback(ele);
         });
     } else {
         if (attempts < 300) { // Stop trying after 30 seconds
             attempts++;
             setTimeout(function () {
-                WaitForLoaded(selector, callback, failed, ignoreVisible, attempts);
+                return WaitForLoaded(selector, callback, failed, ignoreVisible, attempts);
             }, 100);
         } else {
             GlobalHandler('Unable to bind "' + selector + '" Due to binding timeout.', 'debug');
@@ -39,24 +55,60 @@ function WaitForLoaded(selector, callback, failed, ignoreVisible, attempts = 0) 
  * @param {function} failed Callback function to be called if the element is never found
  * @returns {kendoDropDownList} Provides the KDD as a parameter to the callback once it is ready.
  */
-function WaitForKDDLoaded(selector, callback, failed, ignoreVisible, attempts = 0) {
+function WaitForKDDLoaded(selector, callback, failed) {
+    return WaitForKendoLoaded(selector, 'kendoDropDownList', callback, failed);
+}
+
+/**
+ * @description Keep checking to see if an element is loaded into the dom. if it is loaded into the down, the dom is ready, and the element is visible then call it's callback function. If it is not loaded then check again in 100ms. Times out if the element doesn't exist after 30 seconds.
+ * @param {string} selector The selector string to be searched for by JQuery.
+ * @param {string} controlType The type of kendo control this is.
+ * @param {function} callback Callback function to be called once the item is loaded into the dom
+ * @param {function} failed Callback function to be called if the element is never found
+ * @returns {kendoControl} Provides the KendoControl as a parameter to the callback once it is ready.
+ */
+function WaitForKendoLoaded(selector, controlType, callback, failed, attempts = 0) {
     var item = $(selector);
-    var kdd = item ? item.data('kendoDropDownList') : undefined;
-    if (item.length && Boolean(kdd) && Boolean(kdd.value)) {
+    var kdd = item ? item.data(controlType) : undefined;
+    if (item.length && Boolean(kdd) && (controlType != 'kendoDropDownList' || Boolean(kdd.value))) {
         $(function () {
             return callback(kdd);
         });
     } else {
-        if (attempts < 300) { // Stop trying after 30 seconds
+        if (attempts < 300 && selector) { // Stop trying after 30 seconds
             attempts++;
             setTimeout(function () {
-                WaitForKDDLoaded(selector, callback, failed, attempts);
+                return WaitForKendoLoaded(selector, controlType, callback, failed, attempts);
             }, 100);
         } else {
-            GlobalHandler('Unable to bind the "' + selector + '" drop down Due to binding timeout.', 'debug');
-            return Call(failed);
+            if (selector) {
+                GlobalHandler(`Unable to bind the "${selector}" ${controlType} due to binding timeout.`, 'debug');
+                return Call(failed);
+            } else {
+                return Call(failed);
+            }
         }
     }
+}
+
+/**
+ * If a dropdown times out when making its ajax call to get its data or just fails for any reason then by adding
+ * this click function to the dropdown it will retry to pull its data when clicked. This will either trigger kendo's
+ * default ajax read function or you can provide a custom reload function
+ * @param {kendoDropDownList} dd The dropdown to reaload
+ * @param {any} reloadFunc (Optional) If you need to call a customer function to reload the dropdown
+ */
+function AutoReloadKDD(dd, reloadFunc) {
+    dd.wrapper.on('click.AutoReloadKDD', function () {
+        if (dd && dd.dataSource.data().length === 0) {
+            GlobalHandler('Reloading kendo dropdown data', 'debug');
+            if (IsFunction(reloadFunc)) {
+                reloadFunc();
+            } else {
+                dd.dataSource.read();
+            }
+        }
+    });
 }
 
 //Keyboard Navigation Setup for TabStrips
@@ -127,42 +179,51 @@ $('#make-call-phone-number').ready(function () {
 });
 
 function IsViewModel(item) {
-    return typeof (item) === 'object' && 'Init' in item && 'Reset' in item && item.constructor.name.includes('Vm');
+    return item && typeof (item) === 'object' && 'Init' in item && 'Reset' in item && item.constructor.name.includes('Vm');
 }
 
 function IsKoArray(item, ignorePopulated = true) {
-    return ko.isObservable(item) && 'push' in item && (ignorePopulated || IsNotEmptyArray(item()));
+    return item && ko.isObservable(item) && 'push' in item && (ignorePopulated || IsNotEmptyArray(item()));
 }
 
 /**
- * @description Used to reset all knockout Observables inside of a VM. This will also call the reset function inside of any child VM. This also calls a VM's Init function if it has one. This is to reset variables back to their initial default state.
+ * @description **RECURSIVE** Used to reset all knockout Observables inside of a VM. This will also call the reset function inside of any child VM. This also calls a VM's Init function if it has one. This is to reset variables back to their initial default state.
  * @param {object} vm The knockout VM to be reset.
  * @param {Array} ignoreProperties Array of properties to NOT be reset
+ * @returns Promise
  */
 function ResetVm(vm, ignoreProperties) {
-    try {
-        //Create a new instances of the VM and use its values to reset the existing vm back to origional defaults
-        for (var key in vm) {
-            if (ignoreProperties && ignoreProperties.includes(vm[key])) {
-                continue;
+    return new Promise(function (resolve, reject) {
+        try {
+            //Create a new instances of the VM and use its values to reset the existing vm back to origional defaults
+            for (var key in vm) {
+                if (ignoreProperties && ignoreProperties.includes(vm[key])) {
+                    continue;
+                }
+                if (IsKoArray(vm[key])) { // observable array property
+                    vm[key]([]);
+                } else if (vm.hasOwnProperty(key) && ko.isWriteableObservable(vm[key])) { // observable property
+                    vm[key](undefined);
+                } else if (IsViewModel(vm[key])) { // vm property
+                    vm[key].Reset();
+                }
             }
-            if (IsKoArray(vm[key])) { // observable array property
-                vm[key]([]);
-            } else if (vm.hasOwnProperty(key) && ko.isWriteableObservable(vm[key])) { // observable property
-                vm[key](undefined);
-            } else if (IsViewModel(vm[key])) { // vm property
-                vm[key].Reset();
+            if ('Init' in vm) {
+                vm.Init();
             }
+            if ('TabSelector' in vm) {
+                clearValidation(vm.TabSelector);
+            }
+
+            GlobalHandler(`Reset Vm: ${vm.VmName}`, 'debug');
+            resolve();
+        } catch (error) {
+            reject(error);
         }
-        if ('Init' in vm) {
-            vm.Init();
-        }
-        if ('TabSelector' in vm) {
-            clearValidation(vm.TabSelector);
-        }
-    } catch (error) {
-        GlobalHandler(error, 'error');
-    }
+    }).catch(function (err) {
+        var name = 'VmName' in vm ? ' '+vm.VmName : '';
+        throw GlobalHandler(new Error('Resetting Vm' + name + ': ' + err), 'warn');
+    });    
 }
 
 /**
@@ -188,14 +249,14 @@ function CopyVm(fromVm, toVm, ignoreProperties, recur = true) {
             } 
         }
     } catch (error) {
-        GlobalHandler(error, 'error');
+        throw GlobalHandler(error, 'error');
     }
 }
 
 /**
  * @description Generate a list of fields to exclude from serialization
- * @param {Knockout View Model} vm The Vm we want to itterage over and create a black list for
- * @param { Array<string> } vmWhiteList List of Vm names that we want none of the fields included in this black list. The blackList parameter takes precedent over fields skipped by this.
+ * @param {Knockout View Model} vm The Vm we want to itterate over and create a black list for
+ * @param { Array<string> } vmWhiteList List of Vm names that we want none of the fields included in this black list. The blackList parameter takes precedent over this.
  * @param { Array<string> } propWhiteList List of fields we do not want on the black list
  * @param { Array<string> } blackList List of fields that we always want on this list. This takes priority over all other parameters passed in.
  */
@@ -219,7 +280,7 @@ function GetBlackList(vm, vmWhiteList, propWhiteList, blackList) {
         }
         return blackList;
     } catch (error) {
-        GlobalHandler(error, 'error');
+        throw GlobalHandler(error, 'error');
     }
 }
 
@@ -235,52 +296,30 @@ function formatCurrency(value) {
     }    
 }
 
+function formatDate(datetime) {
+    return moment(datetime).format('MM-DD-YYYY');
+}
+
 /**
  * @description Populate a region kendo dropdown's data based on the country
  * @param {string} selector The selector of the region kendo dropdown
  * @param {string} countryIso The country ISO code
  */
-function PopulateRegion(selector, countryIsoCode) {
-    var dd = $(selector).data('kendoDropDownList');
-    if (dd) {
+function PopulateRegion(selector, countryIsoCode, defaultValue) {
+    WaitForKDDLoaded(selector, async dd => {    
         if (countryIsoCode) {
-            $.ajax({
-                url: '/Address/GetRegions',
-                type: 'GET',
-                data: {
-                    countryIsoCode: countryIsoCode
-                },
-                beforeSend: function () {
-                    kendoSpinner(dd, true);
-                },
-                cache: true,
-                complete: function () {
-                    kendoSpinner(dd, false);
-                },
-            }).done(function (data) {
+            var data = await AjaxServices.LocationService.GetRegions(countryIsoCode, dd);
+
+            if (data) {
                 dd.dataSource.data(data);
                 dd.enable(true);
-            });
+                if (defaultValue) { dd.value(defaultValue); }
+            }
         } else {
             dd.value(' ');
             dd.enable(false);
         }
-    }
-}
-
-/**
- * @description Turn on and off the data loading spinner. Currently only supports dropdowns
- * @param {kendoObject} kendoObject The kendo object resulting from .data
- * @param {string} loading Boolean to turn on and off of the spinner
- */
-function kendoSpinner(kendoObject, loading) {
-    if (kendoObject.ns === '.kendoDropDownList') {
-        if (loading) {
-            $(kendoObject._arrowIcon).addClass('k-i-loading');
-        } else {
-            $(kendoObject._arrowIcon).removeClass('k-i-loading');
-        }
-    }
+    });
 }
 
 /**
@@ -318,7 +357,7 @@ function hideInput(selector, hide) {
  * @param {string} startsWith test match
  */
 function stringStartsWith(string, startsWith) {
-    string = string || "";
+    string = string || '';
     if (startsWith.length > string.length)
         return false;
     return string.substring(0, startsWith.length) === startsWith;
@@ -362,11 +401,29 @@ function timer(timerSeconds, timerFormatted, countDown) {
         }
     };
 
+    self.pause = function () {        
+        timerFormatted ? timerFormatted(undefined) : undefined;
+        if (self.Timer) {
+            self.Timer.stop().once();
+        }
+    };
+
     self.start = function () {
         if (isNaN(timerSeconds())) { //Can only start a timer if it is stopped
-            timerSeconds(countDown ? countDown : 0);
+            timerSeconds(countDown ? countDown : 0);            
             $(init);
+        }        
+    };
+
+    self.startOrContinue = function () {
+        if (isNaN(timerSeconds())) { 
+            timerSeconds(countDown ? countDown : 0);            
         }
+        $(init);
+    };       
+
+    self.getTimerSeconds = function () {
+        return timerSeconds();
     };
 }
 
@@ -398,15 +455,13 @@ window.onkeydown = function (e) {
 
 //binds all tooltips when called
 function BindTooltips() {
-	$('[data-toggle="tooltip"]').tooltip({ delay: { "show": 500, "hide": 0 } });
+	$('[data-toggle="tooltip"]').tooltip({ delay: { 'show': 500, 'hide': 0 } });
 }
 
 // Only call a function if it exists
 function Call(functionToCall) {
     if (functionToCall && IsFunction(functionToCall)) {
         functionToCall();
-    } else {
-        GlobalHandler('Function doesnt exist ' + functionToCall, 'debug');
     }
 }
 
@@ -438,7 +493,80 @@ function VmStringToVm(vmString) {
 
 //function VmFromJS(data, vm) {
 //    //Don't convert these things into observerables
-//    var mapping = { copy: ["Name"] }; // Why not work?
+//    var mapping = { copy: ['Name'] }; // Why not work?
 //    var result = ko.mapping.fromJS(data, mapping);
 //    CopyVm(result, vm);
 //}
+
+var kendoEventAppointObj = {
+    event: {
+        Title: undefined,
+        StoreId: undefined,
+        start: undefined,
+        end: undefined,
+        Slots: 1,
+    }
+};
+
+/**
+ * When passed a function with a Promise as it's result this will keep re-executeing until the resulting promise resolves successfully or until the {numOfAttempts} is reached.
+ * Make sure the function you are calling is immutable and has no side effects!!!
+ * @param {any} PromiseFuncToTry Function to execute that returns a promise
+ * @param {any} numOfAttempts How many times to attempt the function
+ * @param {any} delayBetweenAttemptsMs Time delay between retry attempts
+ */
+function RetryPromise(PromiseFuncToTry, numOfAttempts = 4, delayBetweenAttemptsMs = 1000) {
+    return new Promise(async function (resolve, reject) {
+        if (PromiseFuncToTry && IsFunction(PromiseFuncToTry)) {
+            try {
+                var result = await PromiseFuncToTry();
+                return resolve(result); // We got a successful result so return it.
+            } catch (e) { // We failed
+                if (numOfAttempts > 0) { // Try again
+                    setTimeout(() => {
+                        return RetryPromise(PromiseFuncToTry, numOfAttempts - 1, delayBetweenAttemptsMs);
+                    }, delayBetweenAttemptsMs);
+                } else { // Out of attempts so fail
+                    return reject(`All attempts to execute Promise failed. FINAL ERROR: ${e}`);
+                }
+            }
+        } else {
+            return reject("The PromiseFuncToTry parameter is not a function")
+        }
+    });
+}
+
+
+/**
+ * @description This Limits how quickly a function can repeat. Be careful on how long you set the rate. 
+ * The desired request will on be called when after the "rate" miliseconds after the last request is recieved.
+ * !!! Only the last recieved request will be executed !!!
+ * @param {function} request The Request to be executed
+ * @param {function} requestId unique identifyer of the request being made
+ * @param {function} rate How quicly this function is allowed to be called
+ */
+var TypematicRateRequest = new Array();
+function TypematicRate(request, cancelCallback, requestId, rate) {
+    if (TypematicRateRequest[requestId]) {
+        GlobalHandler(`Preventing request ${requestId}: due to the requests rate limit`, 'debug');
+        Call(cancelCallback);
+    }
+    clearTimeout(TypematicRateRequest[requestId]);
+    TypematicRateRequest[requestId] = setTimeout(() => { Call(request); delete TypematicRateRequest[requestId]; }, rate);
+}
+
+function WaitForKnockout(knockoutVar, targetValue, callback, failed, attempts = 0) {
+    if (knockoutVar() === targetValue) {        
+        return Call(callback);
+    } else {
+        if (attempts < 300) { // Stop trying after 30 seconds
+            attempts++;
+            setTimeout(function () {
+                return WaitForKnockout(knockoutVar, targetValue, callback, failed, attempts);
+            }, 100);
+        } else {
+            GlobalHandler('Variable never became"' + targetValue + '" timing out.', 'debug');
+            return Call(failed);
+        }
+    }
+}
