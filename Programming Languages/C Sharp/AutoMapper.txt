@@ -1,0 +1,31 @@
+1. Setup a configuration:
+
+    public class AutoMapper
+	{
+		private static IMapper _mapper;
+		public static IMapper Mapper
+		{
+			get
+			{
+				if (_mapper != null)
+					return _mapper;
+
+				var config = new MapperConfiguration(cfg =>
+				{
+					//cfg.CreateMap<Input, Output>
+                    cfg.CreateMap<AccountSummary, AccountSummaryDTO>()
+                        .ForMember(dest => dest.Year, opts => opts.MapFrom(src => src.Vehicle.Year))
+                        .ForMember(dest => dest.Make, opts => opts.MapFrom(src => src.Vehicle.Make))
+                        .ForMember(dest => dest.Model, opts => opts.MapFrom(src => src.Vehicle.Model));
+				});
+
+                _mapper = config.CreateMapper();
+				return _mapper;
+			}
+		}
+	}
+	
+2. Usage in code:
+	AccountSummary summary = await _accountService.GetAccountSummary(vehicleProgramId);
+	AccountSummaryDTO dto = Mapper.AutoMapper.Mapper.Map<AccountSummaryDTO>(summary);
+	return dto;

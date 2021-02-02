@@ -34,3 +34,25 @@
 				//Return the object so any field not explicitly updated above will remain the same.
 				return t;
 			}))()).ToList();
+			
+			
+EXAMPLE #2:			
+/**
+   SELECT TOP (1000) *
+	  FROM [LCIDashboard].[dbo].[DevicesMaster] as dm
+	  left join [LCIDashboard].[dbo].[ShippingDevices] as sd on dm.dm_Id = sd.DeviceId
+	  left join [LCIDashboard].[dbo].[vireps_shipping_table] as st on st.st_id = sd.ShippingId
+	  where dm.dm_servicecenterid = '6261EFCC-3236-403C-A2C7-D4AF38234697'
+	  and dm.dm_status = 12
+ **/
+serviceCenter.DevicesInTransit =
+	(from dm in db.DevicesMaster
+	 join sd in db.ShippingDevices on dm.dm_Id equals sd.DeviceId into jsd 
+		from jsdResult in jsd.DefaultIfEmpty()
+	 join st in db.vireps_shipping_table on jsdResult.ShippingId equals st.st_id into jst 
+		from jstResult in jst.DefaultIfEmpty()
+	 where dm.dm_servicecenterid == serviceCenter.Id
+		&& dm.dm_status == 12 //Shipping to SC
+	 select new { dm, jstResult })
+	 .AsEnumerable().Select(x => Mapper.AutoMapper.Mapper.Map<Device>(x.dm).Map(x.jstResult))
+	.ToList();
