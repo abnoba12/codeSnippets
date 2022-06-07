@@ -56,3 +56,47 @@ serviceCenter.DevicesInTransit =
 	 select new { dm, jstResult })
 	 .AsEnumerable().Select(x => Mapper.AutoMapper.Mapper.Map<Device>(x.dm).Map(x.jstResult))
 	.ToList();
+	
+	
+EXAMPLE #3:	
+/**
+	SELECT 
+		cfm_clientfileno AS ClientFileNo
+		,UPPER(CONCAT(cla_line1,' ',ISNULL(cla_line2,''))) AS MailingAddress
+		,ISNULL(cla_zip,'') AS ZipCode
+		,(SELECT TOP 1 cdm.cd_DeviceNo FROM ClientDeviceMaster cdm WHERE cdm.cd_ClientFileNo = cfm_clientfileno AND cdm.cd_DeviceType = 'BAU') AS BAU
+		,(SELECT TOP 1 cdm.cd_DeviceNo FROM ClientDeviceMaster cdm WHERE cdm.cd_ClientFileNo = cfm_clientfileno AND cdm.cd_DeviceType = 'VBU') AS VBU
+	FROM
+		ClientFileNoMaster 
+		LEFT OUTER JOIN ClientAddress ON ClientAddress.cla_clientdetailid = ClientFileNoMaster.cfm_clientdetailid AND cla_primary = 1
+	WHERE
+		cfm_reportingstate = 'OK'
+		AND cfm__MainStatus = 8
+ **/
+ 
+ var bau = from cdm in db.ClientDeviceMaster
+		  where cdm.cd_DeviceType == "BAU"
+		  group cdm by cdm.cd_ClientFileNo into gby
+		  select gby.FirstOrDefault();
+
+var vbu = from cdm in db.ClientDeviceMaster
+		  where cdm.cd_DeviceType == "VBU"
+		  group cdm by cdm.cd_ClientFileNo into gby
+		  select gby.FirstOrDefault();
+
+var q = (from cfm in db.ClientFileNoMaster
+		 join cla in db.ClientAddress on new { a = cfm.cfm_clientdetailid, b = true } equals new { a = cla.cla_clientdetailid, b = (bool)cla.cla_primary } into jcla from claResult in jcla.DefaultIfEmpty()
+		 join cbau in bau on cfm.cfm_clientfileno.ToString() equals cbau.cd_ClientFileNo into jcbau from cbauResult in jcbau.DefaultIfEmpty()
+		 join cvbu in vbu on cfm.cfm_clientfileno.ToString() equals cvbu.cd_ClientFileNo into jcvbu from cvbuResult in jcvbu.DefaultIfEmpty()
+		 where cfm.cfm_reportingstate == "OK"                                
+		 select new OKClientList
+		 {
+			 ClientFileNo = cfm.cfm_clientfileno,
+			 MailingAddress = (claResult.cla_line1 + " " + claResult.cla_line2).ToUpper(),
+			 ZipCode = claResult.cla_zip,
+			 BAU = cbauResult.cd_DeviceNo,
+			 VBU = cvbuResult.cd_DeviceNo,
+			 Installed = (cfm.cfm__MainStatus == 8)
+		 }
+	);
+return q.ToList();
