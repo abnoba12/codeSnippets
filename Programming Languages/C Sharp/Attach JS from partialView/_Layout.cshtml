@@ -1,0 +1,202 @@
+﻿@using CallCenterApp.Web.ViewModels
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/Content/Images/Favicon/apple-touch-icon.png?v=2017">
+    <link rel="icon" type="image/png" href="/Content/Images/Favicon/favicon-32x32.png?v=2017" sizes="32x32">
+    <link rel="manifest" href="/Content/Images/Favicon/manifest.json?v=2017">
+    <link rel="mask-icon" href="/Content/Images/Favicon/safari-pinned-tab.svg?v=2017" color="#000000">
+    <link rel="shortcut icon" href="/Content/Images/Favicon/favicon.ico?v=2017">
+    <meta name="apple-mobile-web-app-title" content="Smart Start">
+    <meta name="application-name" content="Smart Start">
+    <meta name="msapplication-config" content="/Content/Images/Favicon/browserconfig.xml?v=2017">
+
+    <title>Smart Call</title>
+
+    <script>
+        // when in web-app mode on iOS this prevents links from opening in a new tab in mobile safari
+        // https://gist.github.com/irae/1042167
+        (function (a, b, c) { if (c in b && b[c]) { var d, e = a.location, f = /^(a|html)$/i; a.addEventListener("click", function (a) { d = a.target; while (!f.test(d.nodeName)) d = d.parentNode; "href" in d && (chref = d.href).replace(e.href, "").indexOf("#") && (!/^[a-z\+\.\-]+:/i.test(chref) || chref.indexOf(e.protocol + "//" + e.host) === 0) && (a.preventDefault(), e.href = d.href) }, !1) } })(document, window.navigator, "standalone");
+
+    </script>
+
+    @Styles.Render("~/Content/css/mainCss")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <!-- Below was the least hacky way to include localization support for datarangepicker from and to -->
+    <style>
+        .daterangepicker td.start-date {
+            line-height: 0.7;
+        }
+
+        .daterangepicker td.start-date:after {
+            content: "\A @Resources.FromLC";
+            font-size: x-small;
+            white-space: pre;
+        }
+
+        .daterangepicker td.end-date {
+            line-height: 0.7;
+        }
+
+        .daterangepicker.single.end-date { line-height: inherit; }
+
+        .daterangepicker td.end-date:after {
+            content: " \A @Resources.ToLC";
+            font-size: x-small;
+            white-space: pre;
+        }
+
+        .daterangepicker .single td:after { content: none; }
+
+        .daterangepicker .active.start-date.end-date.available:after {
+            content: none;
+        }
+
+    </style>
+
+    <!--[if lt IE 9]>
+        @Styles.Render("~/Content/css/IE8CustomCss")
+    <!--<![endif]-->
+
+
+    <script type="text/javascript">
+        window.applicationBaseUrl = @Html.Raw(HttpUtility.JavaScriptStringEncode(
+            new Uri(
+                       new Uri(this.Context.Request.Url.GetLeftPart(UriPartial.Authority)),
+                       Url.Content("~/")
+                   ).ToString(), true));
+    </script>
+    @*
+        <!-- Google Analytics -->
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+            ga('create', 'UA-88857040-1', 'auto');
+            ga('require', 'autotrack', {
+                attributePrefix: 'data-servapp-',
+                mediaQueryDefinitions: [
+                  {
+                      name: 'Breakpoint',
+                      dimensionIndex: 1,
+                      items: [
+                        {name: 'xs', media: 'all'},
+                        {name: 'sm', media: '(min-width: 321px)'},
+                        {name: 'md', media: '(min-width: 768px)'},
+                        {name: 'lg', media: '(min-width: 992px)'}
+                      ]
+                  },
+                  {
+                      name: 'Device Orientation',
+                      dimensionIndex: 2,
+                      items: [
+                        {name: 'landscape', media: '(orientation: landscape)'},
+                        {name: 'portrait',  media: '(orientation: portrait)'}
+                      ]
+                  }
+                ]
+            });
+            ga('set', 'userId', '@User.Identity.Name'); // Set the user ID using signed-in user_id.
+            ga('send', 'pageview');
+        </script>
+        <script async src='~/Scripts/autotrack.js'></script>
+        <!-- End Google Analytics -->
+
+    *@
+    @Scripts.Render("~/bundles/uploadfile")
+    <!--[if lt IE 9]>
+    @Scripts.Render("~/bundles/jquery-fallback")
+    <![endif]-->
+    <!--[if gt IE 8 | (!IE)]><!-->
+    @Scripts.Render("~/bundles/jquery")
+    <!--<![endif]-->
+
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/respond")
+    @Scripts.Render("~/bundles/general")
+    @Scripts.Render("~/bundles/kendo")
+</head>
+<body class="container-fluid site-wrapper">
+<div class="body-content">
+    @Html.Partial("~/Views/Shared/_NavPartial.cshtml")
+    <table class="nav-container">
+        <tr>
+            <td class="left-nav">
+                <div class="left-nav-tab active">
+                    <span class="glyphicon glyphicon-search"></span>
+                </div>
+                <div class="left-nav-tab">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </div>
+                <div class="left-nav-tab">
+                    <span class="glyphicon glyphicon-user"></span>
+                </div>
+            </td>
+            <td>
+                <div class="row">
+                    <div class="col-xs-12">
+                        @RenderBody()
+                    </div>
+                </div> 
+            </td>
+        </tr>
+    </table>
+    <div class="grey-background hidden"></div>
+
+    @{
+        if (Session["NeedAuth"] != null && Session["NeedAuth"].ToString() == "true")
+        {
+            <div class="grey-background-auth"></div>
+            @Html.Partial("_AuthNeeded", new LoginViewModel())
+        }
+    }
+</div>
+
+
+
+
+    @Html.Partial("_LocalizationHelperPartial")
+
+    @RenderSection("scripts", false)
+    @Html.RenderPartialScripts()
+
+    @*<!--Start of Zopim Live Chat Script-->
+        <script type="text/javascript">
+
+            var ua = navigator.userAgent.toLowerCase(),
+                platform = navigator.platform.toLowerCase();
+            platformName = ua.match(/ip(?:ad|od|hone)/)
+                    ? 'ios'
+                    : (ua.match(/(?:webos|android)/) || platform.match(/mac|win|linux/) || ['other'])[0],
+                isMobile = /ios|android|webos/.test(platformName);
+            if (!isMobile) {
+                //place the Zopim chat widget code here without the <script> tags
+                window.$zopim ||
+                (function (d, s) {
+                    var z = $zopim = function (c) { z._.push(c) },
+                        $ = z.s =
+                            d.createElement(s),
+                        e = d.getElementsByTagName(s)[0];
+                    z.set = function (o) {
+                        z.set._.push(o);
+                    };
+                    z._ = [];
+                    z.set._ = [];
+                    $.async = !0;
+                    $.setAttribute("charset", "utf-8");
+                    $.src = "//v2.zopim.com/?3KptpUWbNU8t6YW9OyJkf4ZI7vieDl6x";
+                    z.t = +new Date;
+                    $.type = "text/javascript";
+                    e.parentNode.insertBefore($, e);
+                })(document, "script");
+            }
+        </script>
+        <!--End of Zopim Live Chat Script-->*@
+
+    </body>
+    </html>
