@@ -6,6 +6,9 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.Collections.Concurrent;
 using System.Web.Hosting;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
 
 /// <summary>
 ///  Wrapper for the HttpRuntime Cache.
@@ -52,10 +55,11 @@ public static class CachedDataManager
     /// <param name="cacheKey">The key used to reference the cached value</param>
     /// <param name="getValue">Value to be saved in the cache</param>
     /// <param name="timeoutLength">(Optional) Set the time to live for this specific cache key</param>
-    /// <param name="dependsOnKeys">(Optional) If this cache key is dependent on other keys then they can be linked usinging this parameter
+    /// <param name="dontCacheEmpty">(Optional) If the result of "getValue" is empty or the default value then do not save those results in the cache. Default = false</param>
+    /// <param name="dependsOnKeys">(Optional) If this cache key is dependent on other keys then they can be linked usinging this parameter. When any of these resources changes, the cached object becomes obsolete and is removed from the cache.
     /// list. This will force the expiration </param>
     /// <returns></returns>
-    public static T GetCachedItem<T>(string cacheKey, Func<T> getValue = null, TimeSpan? timeoutLength = null, params string[] dependsOnKeys)
+    public static T GetCachedItem<T>(string cacheKey, Func<T> getValue = null, TimeSpan? timeoutLength = null, bool dontCacheEmpty = false, params string[] dependsOnKeys)
     {
         var tup = HttpRuntime.Cache[cacheKey] as Tuple<T>;
         if (tup != null)
@@ -69,11 +73,22 @@ public static class CachedDataManager
             tup = HttpRuntime.Cache[cacheKey] as Tuple<T>;
             if (tup == null)
             {
-                tup = Tuple.Create(getValue());
-                var dependency = dependsOnKeys.Length > 0 ? new CacheDependency(null, dependsOnKeys) : null;
-                var timeout = timeoutLength == null ? DateTime.Now.AddSeconds(cacheTimeout.Value + (new Random()).Next(-30, 31)) : DateTime.Now.AddMilliseconds(timeoutLength.Value.TotalMilliseconds);
-                timeout = dependency == null ? timeout : Cache.NoAbsoluteExpiration;
-                HttpRuntime.Cache.Insert(cacheKey, tup, dependency, timeout, Cache.NoSlidingExpiration, CacheItemPriority.NotRemovable, null);
+                T val = getValue();
+
+                //Don't cache this item because we got no result from the function getValue.
+                if (dontCacheEmpty && !HasValues(val))
+                {
+                    return tup.Item1;
+                }
+
+                if (val != null)
+                {
+                    tup = Tuple.Create(val);
+                    var dependency = dependsOnKeys.Length > 0 ? new CacheDependency(null, dependsOnKeys) : null;
+                    var timeout = timeoutLength == null ? DateTime.Now.AddSeconds(cacheTimeout.Value + (new Random()).Next(-30, 31)) : DateTime.Now.AddMilliseconds(timeoutLength.Value.TotalMilliseconds);
+                    timeout = dependency == null ? timeout : Cache.NoAbsoluteExpiration;
+                    HttpRuntime.Cache.Insert(cacheKey, tup, dependency, timeout, Cache.NoSlidingExpiration, CacheItemPriority.NotRemovable, null);
+                }
             }
         }
         object o = cacheItemLocks.TryRemove(cacheKey, out o) ? o : null;
@@ -121,4 +136,60 @@ public static class CachedDataManager
         return string.Concat(VirtualPathUtility.ToAbsolute(path), "?v", HttpRuntime.Cache[path]);
     }
 
+    private static bool HasValues<T>(T val)
+    {
+        if (val == null)
+        {
+            return false;
+        }
+
+        Type type = typeof(T);
+
+        // Check if the type is a collection
+        if (typeof(IEnumerable).IsAssignableFrom(type) && type != typeof(string))
+        {
+            IEnumerable enumerable = (IEnumerable)val;
+            if (!enumerable.Cast<object>().Any())
+            {
+                //Value is an empty collection
+                return false;
+            }
+        }
+        // Check if the type is a string
+        else if (type == typeof(string))
+        {
+            string strVal = val as string;
+            if (string.IsNullOrWhiteSpace(strVal))
+            {
+                //Value is null or whitespace
+                return false;
+            }
+        }
+        // Check if the type is a nullable value type
+        else if (Nullable.GetUnderlyingType(type) != null)
+        {
+            if (val.Equals(default(T)))
+            {
+                //Value is null or the default value
+                return false;
+            }
+        }
+        // Check if the type is an array
+        else if (type.IsArray)
+        {
+            Array array = val as Array;
+            if (array != null && array.Length == 0)
+            {
+                //Value is an empty array
+                return false;
+            }
+        }
+        // Check if the value is the default value for the type
+        else if (val.Equals(default(T)))
+        {
+            //Value is the default value for the type
+            return false;
+        }
+        return true;
+    }
 }
