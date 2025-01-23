@@ -162,5 +162,45 @@ namespace WE.Freamwork.Logic.Helpers
             // Step 7
             return d[n, m];
         }
+		
+		
+		/// <summary>
+		/// Take a string of digits and format it as a specific phone number format. 
+		/// </summary>
+		/// <param name="input">Input String</param>
+		/// <param name="formatType">0 = (ddd) ddd-dddd</param>
+		/// <param name="error">When unable to format the string as a phone number then: Ture = Throw errors, False = return null</param>
+		/// <returns>Formatted string, Null, or an error</returns>
+		/// <exception cref="ArgumentException"></exception>
+		public static string FormatAsPhone(this string input, int formatType = 0, bool error = false)
+		{
+			// Remove all non-digit characters
+			string digits = new string(input.Where(char.IsDigit).ToArray());
+
+			//Default format like (ddd) ddd-dddd
+			if (formatType == 0)
+			{
+				// Check the number of digits and format accordingly
+				switch (digits.Length)
+				{
+					case 10:
+						return $"({digits.Substring(0, 3)}) {digits.Substring(3, 3)}-{digits.Substring(6, 4)}";
+					case 7:
+						return $"{digits.Substring(0, 3)}-{digits.Substring(3, 4)}";
+					default:
+						if (error)
+						{
+							throw new ArgumentException("Input must have exactly 7 or 10 digits.");
+						}
+						return null;
+				}
+			}
+
+			if (error)
+			{
+				throw new ArgumentException($"Unknown phone number format type: {formatType}");
+			}
+			return null;
+		}
     }
 }
