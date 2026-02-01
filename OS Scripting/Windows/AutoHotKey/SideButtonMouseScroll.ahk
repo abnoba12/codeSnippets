@@ -1,5 +1,21 @@
-﻿; Define the scroll interval in milliseconds
-scrollInterval := 30
+﻿; Remap horizontal scroll to vertical scroll
+WheelRight::
+	Loop 5 ; Adjust the number (higher = faster scroll)
+    {
+        Send {WheelUp}
+        Sleep 10 ; Adjust the delay between scrolls (lower = faster)
+    }
+    Return
+WheelLeft::	
+	Loop 5 ; Adjust the number (higher = faster scroll)
+    {
+        Send {WheelDown}
+        Sleep 10 ; Adjust the delay between scrolls (lower = faster)
+    }
+    Return
+
+; Define the scroll interval in milliseconds
+scrollInterval := 40
 
 ; Scroll down while holding XButton1
 XButton1::
